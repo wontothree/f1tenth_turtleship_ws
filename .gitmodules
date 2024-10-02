@@ -1,0 +1,4 @@
+[submodule "src/vesc"]
+	path = src/vesc
+	url = https://github.com/f1tenth/vesc.git
+	branch = foxy
