@@ -74,22 +74,6 @@ angular:
 
 `joystick_node`
 
-# Getting Started
-
-```bash
-source /opt/ros/foxy/setup.bash
-source install/local_setup.bash
-```
-
-```bash
-lsusb
-ls /dev/input*
-
-ros2 launch vesc_driver vesc_driver_node.launch.py
-ros2 run joy joy_node
-ros2 run joystick joystick_node
-```
-
 # Dependencies
 
 `rclcpp`, `std_msgs`, `geometry_msgs`
