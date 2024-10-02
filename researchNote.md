@@ -211,6 +211,3 @@ ros2 launch vesc_driver vesc_driver_node.launch.py
 
 solution
 
-```bash
-ros2 run vesc vesc_node --ros-args -p port:=/dev/ttyACM0
-```

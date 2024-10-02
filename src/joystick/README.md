@@ -48,7 +48,7 @@ buttons:
 
 Command velocity messages arising from Joystick commands.
 
-`/cmd_vel` (geometry_msgs/msg/Twist)
+- `/cmd_vel` (geometry_msgs/msg/Twist) just for test in turtlesim
 
 ```
 geometry_msgs/Vector3 linear
@@ -65,6 +65,10 @@ angular:
   y: 0.0
   z: 0.0
 ```
+
+- `/commands/motor/speed` (std_msgs::msg::Float64) : $[-23250, 23250]$
+- `/commands/motor/brake` (std_msgs::msg::Float64) : $[-20000, 200000]$
+- `/commands/servo/position` (std_msgs::msg::Float64) : $[0.15, 0.85]$
 
 # Nodes
 
