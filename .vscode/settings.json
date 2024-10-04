@@ -61,6 +61,12 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "bit": "cpp"
+        "bit": "cpp",
+        "csignal": "cpp",
+        "codecvt": "cpp",
+        "filesystem": "cpp",
+        "regex": "cpp",
+        "future": "cpp",
+        "shared_mutex": "cpp"
     }
 }

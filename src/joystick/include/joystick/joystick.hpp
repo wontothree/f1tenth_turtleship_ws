@@ -8,11 +8,6 @@
 
 class Joystick : public rclcpp::Node {
 
-public:
-    Joystick();
-
-    void joyCallback(const sensor_msgs::msg::Joy::SharedPtr joyMsg);
-
 private:
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joySubscriber_;   // subscriber
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr twistPublisher_;   // publisher
@@ -20,4 +15,9 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr commandsServoPositionPublisher_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr commandsMotorSpeedPublisher_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr commandsMotorBrakePublisher_;
+
+public:
+    Joystick();
+
+    void joyCallback(const sensor_msgs::msg::Joy::SharedPtr joyMsg);
 };

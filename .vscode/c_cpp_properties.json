@@ -3,7 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/opt/ros/foxy/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",

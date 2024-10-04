@@ -1,4 +1,4 @@
-# [Package] Joystick
+# [Package] joystick
 
 The purpose of this package is to provide a generic facility for tele-operating Twist-based ROS2 robots with joystick [**Logitech G F710 Wireless Gamepad**](https://www.amazon.com/Logitech-Wireless-Nano-Receiver-Controller-Vibration/dp/B0041RR0TW?th=1). It converts joy messages to velocity commands.
 

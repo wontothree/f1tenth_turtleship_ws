@@ -5,8 +5,9 @@ This project is for 22nd F1TENTH AUTONOMOUS GRAND Grand Prix at CDC 2024.
     f1tenth_turtleship_ws
     └── src/
         ├── joystick/                 # 
-        ├── vesc/                     # 
-        └──                           #
+        ├── vesc/                     #
+        ├── urg_node2/                # 
+        └── pid_planner               #
 
 # Tested Environment
 
