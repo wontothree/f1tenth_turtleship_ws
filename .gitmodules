@@ -2,3 +2,8 @@
 	path = src/vesc
 	url = https://github.com/f1tenth/vesc.git
 	branch = foxy
+
+[submodule "src/urg_node2"]
+	path = src/urg_node2
+	url = https://github.com/Hokuyo-aut/urg_node2
+	branch = main
