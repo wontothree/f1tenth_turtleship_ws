@@ -4,10 +4,11 @@ This project is for 22nd F1TENTH AUTONOMOUS GRAND Grand Prix at CDC 2024.
 
     f1tenth_turtleship_ws
     └── src/
-        ├── joystick/                 # 
-        ├── vesc/                     #
-        ├── urg_node2/                # 
-        └── pid_planner               #
+        ├── vesc/                                 #
+        ├── urg_node2/                            # 
+        ├── joystick/                             #
+        ├── local_costmap_generator/              # 
+        └── pid_planner                           #
 
 # Tested Environment
 
@@ -64,4 +65,4 @@ ifconfig
 - Logitech G F710 Wireless Gamepad
 - Bldc motor
 - Servo motor - steering
-- Hokuyo
+- [Hokuyo](https://www.hokuyo-aut.jp/search/single.php?serial=167)

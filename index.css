@@ -1,0 +1,98 @@
+/* styles.css */
+
+* {
+    box-sizing: border-box;
+    text-rendering: optimizeLegibility;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+#root, body, html {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    line-height: 1.8rem;
+    font-family: sans-serif;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    color: #888;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+footer {
+    text-align: center;
+}
+
+html {
+    font-size: 16px;
+}
+
+@media (max-width: 1440px) {
+    html {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 1200px) {
+    html {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 1024px) {
+    html {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    html {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    html {
+        font-size: 10px;
+    }
+}
+
+@media print {
+    html {
+        font-size: 10px;
+    }
+}
+
+/* custom */
+.intro {
+    margin: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1rem;
+    align-items: center;
+}
+
+.box {
+    width: 45%; /* 너비를 100%로 설정하여 부모 요소에 맞춤 */
+    margin: 2rem 0; /* 위쪽과 아래쪽 여백 */
+    border: 1px solid #aaa;
+    padding: 0 1rem;
+    border-radius: 5px; /* 모서리 둥글게 */
+}
+
+.container {
+    padding-top: 1rem;
+    line-height: 1;
+}

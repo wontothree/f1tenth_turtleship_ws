@@ -211,3 +211,14 @@ ros2 launch vesc_driver vesc_driver_node.launch.py
 
 solution
 
+*10/06/2024*
+
+Cart Pole 프로젝트가 끝나서 여유가 생기기 무섭게 교수님께 공식 메일이 왔다. F1tenth 팀이 개발 속도가 너무 느리다는 말씀과 함께 tension injection을 해주셨다.
+
+개발을 시작한지 일주일째이다. 일주일 동안 돌아가는 시스템을 구축했다.
+
+- Joystick으로 turtleshim에서 turtle 제어하기
+- Joystick으로 차량 제어하기
+- 간단한 pid planner 넣어서 자율주행하기
+
+다음주에는 SVGD MPPI를 구현할 예정이다. 구현이 된다면 ICCAS에 등록할 것이다.
