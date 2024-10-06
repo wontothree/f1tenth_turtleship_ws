@@ -1,6 +1,6 @@
 urg_node2:
   ros__parameters:
-    ip_address: '192.168.0.10'
+    ip_address: '192.168.1.11'
     ip_port: 10940
     frame_id : 'laser'
     calibrate_time : false

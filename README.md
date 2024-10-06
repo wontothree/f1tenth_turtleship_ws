@@ -58,6 +58,8 @@ Hokuyo Lidar
 
 ```bash
 ifconfig
+rosdep update
+rosdep install -i --from-paths urg_node2
 ```
 
 # Hardware
