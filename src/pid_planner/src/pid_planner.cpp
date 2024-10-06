@@ -22,13 +22,7 @@ void PidPlanner::scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan)
 double PidPlanner::get_range(const sensor_msgs::msg::LaserScan::SharedPtr scan, double angle)
 {
     // LiDAR의 특정 각도에 대한 거리 측정값을 반환하는 헬퍼 함수
-    assert(angle >= scan->angle_min && angle <= scan->ang
-Servo Position: 0.586499, Speed: 2000
-Servo Position: 0.589673, Speed: 2000
-Servo Position: 0.613885, Speed: 2000
-Servo Position: 0.584693, Speed: 2000
-Servo Position: 0.613599, Speed: 2000
-Servo Position: 0.601178, Speed: 2000le_max);
+    assert(angle >= scan->angle_min && angle <= scan->angle_max);
     
     int i = static_cast<int>((angle - scan->angle_min) / scan->angle_increment);
     
