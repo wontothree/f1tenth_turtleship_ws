@@ -231,10 +231,33 @@ local costmap을 만들기 위해서는 ego_racecar/base_link를 publish할 수 
 
 TF는 IMU로부터 생성하는 건 아닌 것 같다. 다음 post들을 숙지하자.
 
-[Introducing tf2](https://docs.ros.org/en/foxy/Tutorials/Intermediate/Tf2/Introduction-To-Tf2.html)
+- [Introducing tf2](https://docs.ros.org/en/foxy/Tutorials/Intermediate/Tf2/Introduction-To-Tf2.html)
+- [Writing a static broadcaster (C++)](https://docs.ros.org/en/foxy/Tutorials/Intermediate/Tf2/Writing-A-Tf2-Static-Broadcaster-Cpp.html)
+- [Writing a broadcaster (C++)](https://docs.ros.org/en/foxy/Tutorials/Intermediate/Tf2/Writing-A-Tf2-Broadcaster-Cpp.html)
+- [Writing a listener (C++)](https://docs.ros.org/en/foxy/Tutorials/Intermediate/Tf2/Writing-A-Tf2-Listener-Cpp.html)
 
 https://with-rl.tistory.com/entry/ROS2-Transformation-System-TF2
 
-https://docs.ros.org/en/foxy/Tutorials/Intermediate/Tf2/Writing-A-Tf2-Broadcaster-Cpp.html
+*10/07/2024*
 
-https://docs.ros.org/en/foxy/Tutorials/Intermediate/Tf2/Writing-A-Tf2-Listener-Cpp.html
+In your real development process you shouldn’t have to write this code yourself and should use the dedicated tf2_ros tool to do so. tf2_ros provides an executable named static_transform_publisher that can be used either as a commandline tool or a node that you can add to your launchfiles.
+
+Publish a static coordinate transform to tf2 using an x/y/z offset in meters and roll/pitch/yaw in radians. In our case, roll/pitch/yaw refers to rotation about the x/y/z-axis, respectively.
+
+```bash
+ros2 run tf2_ros static_transform_publisher x y z yaw pitch roll frame_id child_frame_id
+```
+
+예를 들면, 차량에서 lidar의 물리적인 위치와 차량의 중심의 위치가 일치할 때,
+
+```bash
+ros2 run tf2_ros static_transform_publisher 0.0 0.0 0.0 0.0 0.0 0.0 "ego_racecar/laser" "ego_racecar/base_link"
+```
+
+"ego_racecar/base_link"는 차량의 질량 중심이 아닌 기하학적 중심을 의미한다. (질량 중심과 기하학적 중심이 일치하도록 설계하는 경우가 많다.)
+
+만약 라이다의 위치가 차량의 중심보다 20cm 앞에 있다면 다음과 같이 명령어를 구성해야 한다.
+
+```bash
+ros2 run tf2_ros static_transform_publisher 0.2 0.0 0.0 0.0 0.0 0.0 "ego_racecar/laser" "ego_racecar/base_link"
+```
