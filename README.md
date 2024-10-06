@@ -67,11 +67,14 @@ ros2 run joystick joystick_node
 - Bldc motor
 - Servo motor - steering
 - [Hokuyo](https://www.hokuyo-aut.jp/search/single.php?serial=167)
+- [IMU](https://www.devicemart.co.kr/goods/view?no=15136719&srsltid=AfmBOoqRikGmc_8O2PogU1WQg-s3Kz6dxdQenrYfrV1s8TG_qI2BBXvy)
 
 # Dependencies
 
-I use two dependency packages
+I use three dependency packages
 
 https://github.com/Hokuyo-aut/urg_node2/tree/11d02a97a7352af508400d03ed9b0b219a33f1ac
 
 https://github.com/f1tenth/vesc/tree/5b2bd1b3f3896b078e5d91623702e73d62ece7a7
+
+https://github.com/ntrexlab/PC_AHRS_ROS2
