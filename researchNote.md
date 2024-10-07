@@ -266,3 +266,31 @@ ros2 run tf2_ros static_transform_publisher 0.09 0.0 0.0 0.0 0.0 0.0 "ego_raceca
 
 - /tf 토픽: 동적인 좌표 변환 정보가 퍼블리시되는 토픽. 예를 들어, 움직이는 로봇의 좌표 변환이 이 토픽을 통해 주기적으로 업데이트됩니다. 거북이의 위치와 회전 정보가 이 토픽에 퍼블리시됩니다.
 - /tf_static 토픽: 고정된 좌표 변환 정보가 퍼블리시되는 토픽입니다. 움직이지 않는 정적인 좌표 변환은 이 토픽에 한 번만 퍼블리시됩니다.
+
+local costmap generator를 구현하려는데 tf가 자꾸 발목을 잡는다.
+
+```bash
+ros2 run tf2_ros tf2_monitor
+```
+
+local costmap...
+
+lidar point가 내가 정의한 costmap 안에 있는지 없는지 여부가 가장 중요하다.
+
+- lidar point가 costmap 내부에 있다 -> occupied
+- lidar point가 costmap 외부에 있다 -> empty
+
+occupied된 점에 해당하는 index를 저장한다.
+
+```cpp
+std::vector<grid_map::Index> LocalCostmapGenerator::pclToCostmap(
+    const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pcl,
+    grid_map::GridMap* costmap
+) const
+{ 
+    // 
+    return occupiedIndices;
+}
+```
+
+이 함수는 costmap

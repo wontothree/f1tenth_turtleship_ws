@@ -67,6 +67,8 @@
         "filesystem": "cpp",
         "regex": "cpp",
         "future": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "any": "cpp",
+        "slist": "cpp"
     }
 }

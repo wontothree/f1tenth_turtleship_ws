@@ -29,11 +29,11 @@ LocalCostmapGenerator::LocalCostmapGenerator() : Node("local_costmap_generator_n
     grid_map::GridMap* costmap_ = new grid_map::GridMap();
     costmap_->add("collision_layer", grid_map::Matrix::Zero(costmap_->getSize()(0), costmap_->getSize()(1)));
     costmap_->setGeometry(grid_map::Length(10.0, 10.0), 0.1); // length: 10m, weight: 10m, resolution: 0.1m
-    // 모든 값 0으로 초기화
-    for (const auto& layer : costmap_->getLayers()) {
-        grid_map::Matrix& data = costmap_->get(layer);
-        data.setZero(); // 모든 값을 0으로 설정
-    }
+    // // 모든 값 0으로 초기화
+    // for (const auto& layer : costmap_->getLayers()) {
+    //     grid_map::Matrix& data = costmap_->get(layer);
+    //     data.setZero(); // 모든 값을 0으로 설정
+    // }
     // std::cout << "GridMap Information:" << std::endl;
     
     // // 해상도 출력
@@ -117,20 +117,17 @@ void LocalCostmapGenerator::timerCallback()
 
     // sensor frame coordinate 2 robot frame coordinate
     sensorFrameToRobotFrame(pcl_);
+    // print
+    // std::cout << "PointCloud contains " << pcl_->size() << " points:\n" << std::endl;
 
-    // pcl_의 포인트 개수와 각 포인트의 좌표를 출력
-    // std::stringstream ss;
-    // ss << "PointCloud contains " << pcl_->size() << " points:\n";
     // for (const auto& point : pcl_->points) {
-    //     ss << "Point: [x: " << point.x << ", y: " << point.y << ", z: " << point.z << "]\n";
+    //     std::cout << "Point: [x: " << point.x << ", y: " << point.y << ", z: " << point.z << "]\n" << std::endl;
     // }
-    // RCLCPP_INFO(this->get_logger(), "%s", ss.str().c_str());
 
     // remove cloud points within robot ----------------------------------------------------------
 
     // convert pcl to costmap
-    // const std::vector<grid_map::Index> occupiedIndices = pclToCostmap(pcl_, costmap_);
-    std::cout << "test" << std::endl;
+    const std::vector<grid_map::Index> occupiedIndices = pclToCostmap(pcl_, costmap_);
 
     // Output the occupied indices
     // std::cout << "Occupied Indices:" << std::endl;
@@ -152,6 +149,8 @@ void LocalCostmapGenerator::sensorFrameToRobotFrame(pcl::PointCloud<pcl::PointXY
 {   
     /*
         transform senfor frame to robot frame
+
+        this function need topic '/tf_static'
     */
     std::string robotFrameId_ = "ego_racecar/base_link";
     std::string sensorFrameId_ = "ego_racecar/laser";
@@ -170,42 +169,121 @@ void LocalCostmapGenerator::sensorFrameToRobotFrame(pcl::PointCloud<pcl::PointXY
 
 // std::vector<grid_map::Index> LocalCostmapGenerator::pclToCostmap(
 //     const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pcl,
-//     grid_map::GridMap* costmap) const
+//     grid_map::GridMap* costmap
+// ) const
 // {
-//     // // initialize collision layer
-//     // grid_map::Matrix& costmapData = costmap->get("collision_layer");
-//     // costmapData.setZero();
-    
-//     // // initialize
-//     // std::vector<grid_map::Index> occupiedIndices(pcl->points.size());
+//     // PointCloud의 크기를 기반으로 occupiedIndices 초기화
+//     std::vector<grid_map::Index> occupiedIndices(pcl->points.size(), grid_map::Index(0, 0));
 
+//     for (unsigned int index = 0; index < pcl->points.size(); ++index) {
+//         const auto& point = pcl->points[index];  // 잘못된 변수명 수정
 
-//     std::cout << "2" << std::endl;
+//         // 포인트가 costmap 내에 있는지 확인
+//         if (point.x >= -2.0 && point.x <= 2.0 && point.y >= -2.0 && point.y <= 2.0) {
+//             // 그리드 인덱스를 계산 (포인트 클라우드 좌표를 그리드 인덱스에 매핑)
+//             int grid_x = static_cast<int>((point.x + 2.0) / 0.1); // x 좌표를 그리드 인덱스로 변환
+//             int grid_y = static_cast<int>((point.y + 2.0) / 0.1); // y 좌표를 그리드 인덱스로 변환
 
-//     // transform pcl to costmap using parallel processing
-//     // #pragma omp parallel for num_threads(8)
-//     // for (unsigned int i = 0; i < pcl->points.size(); ++i) {
-//     //     const auto& point = pcl->points[i];
+//             // 변환된 인덱스를 occupiedIndices에 저장
+//             occupiedIndices[index] = grid_map::Index(grid_x, grid_y);
+//         } else {
+//             // 포인트가 costmap 바깥에 있는 경우 (-1, -1)로 표시
+//             occupiedIndices[index] = grid_map::Index(-1, -1);
+//         }
+//     }
 
-//     //     std::cout << "1" << std::endl;
+//     // 디버깅용 출력
+//     for (size_t i = 0; i < occupiedIndices.size(); ++i) {
+//         std::cout << "Index " << i << ": (" << occupiedIndices[i].x() << ", " << occupiedIndices[i].y() << ")" << std::endl;
+//     }
 
-//     //     // 포인트가 비용 맵 내부에 있을 경우 처리
-//     //     if (costmap->isInside(grid_map::Position(point.x, point.y))) {
-//     //         std::cout << "in" << std::endl;
-//     //         // grid_map::Index index;
-//     //         // costmap->getIndex(grid_map::Position(point.x, point.y), index);
-//     //         // costmapData(index.x(), index.y()) = 100; // 사용자 정의 constant
-            
-//     //         // occupiedIndices[i] = index; // 인덱스를 추가
-//     //     } else {
-//     //         occupiedIndices[i] = grid_map::Index(-1, -1); // 범위를 벗어난 경우
-//     //     }
-//     // }
-
-//     // // (-1, -1) 인덱스를 제거하여 최종 occupied_indices를 만듭니다.
-//     // occupiedIndices.erase(std::remove_if(occupiedIndices.begin(), occupiedIndices.end(),
-//     //                                       [](const grid_map::Index& index) { return index.x() == -1 && index.y() == -1; }),
-//     //                        occupiedIndices.end());
 
 //     return occupiedIndices;
 // }
+
+// std::vector<grid_map::Index> LocalCostmapGenerator::pclToCostmap(
+//     const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pcl,
+//     grid_map::GridMap* costmap
+// ) const
+// {
+//     std::vector<grid_map::Index> occupiedIndices(pcl->points.size(), grid_map::Index(0, 0));
+    
+//     // 40x40 행렬 초기화
+//     const int gridSize = 40;
+//     std::vector<std::vector<int>> visualMatrix(gridSize, std::vector<int>(gridSize, 0));
+
+//     for (unsigned int index = 0; index < pcl->points.size(); ++index) {
+//         const auto& point = pcl->points[index];
+
+//         if (point.x >= -2.0 && point.x <= 2.0 && point.y >= -2.0 && point.y <= 2.0) {
+//             int grid_x = static_cast<int>((point.x + 2.0) / 0.1); // x 좌표를 그리드 인덱스로 변환
+//             int grid_y = static_cast<int>((point.y + 2.0) / 0.1); // y 좌표를 그리드 인덱스로 변환
+
+//             // 변환된 인덱스를 occupiedIndices에 저장
+//             occupiedIndices[index] = grid_map::Index(grid_x, grid_y);
+            
+//             // 2D 행렬에 해당 인덱스를 1로 설정
+//             visualMatrix[grid_y][grid_x] = 1; // y 방향이 아래쪽, x 방향이 오른쪽
+//         } else {
+//             occupiedIndices[index] = grid_map::Index(-1, -1);
+//         }
+//     }
+
+//     // 디버깅용 출력: 40x40 행렬 시각화
+//     for (int y = gridSize - 1; y >= 0; --y) { // y 방향이 아래쪽이므로 역순으로 출력
+//         for (int x = 0; x < gridSize; ++x) {
+//             std::cout << visualMatrix[y][x];
+//         }
+//         std::cout << std::endl;
+//     }
+//     std::cout << "----------------------------------" << std::endl;
+
+//     return occupiedIndices;
+// }
+std::vector<grid_map::Index> LocalCostmapGenerator::pclToCostmap(
+    const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pcl,
+    grid_map::GridMap* costmap
+) const
+{
+    std::vector<grid_map::Index> occupiedIndices(pcl->points.size(), grid_map::Index(0, 0));
+    
+    // 40x40 행렬 초기화
+    const int gridSize = 40;
+    std::vector<std::vector<int>> visualMatrix(gridSize, std::vector<int>(gridSize, 0));
+
+    // 정 중앙을 5로 표시
+    int centerX = gridSize / 2; // 중앙 x 인덱스
+    int centerY = gridSize / 2; // 중앙 y 인덱스
+    visualMatrix[centerY][centerX] = 5; // 중앙을 5로 설정
+
+    for (unsigned int index = 0; index < pcl->points.size(); ++index) {
+        const auto& point = pcl->points[index];
+
+        if (point.x >= -2.0 && point.x <= 2.0 && point.y >= -2.0 && point.y <= 2.0) {
+            int grid_x = static_cast<int>((point.x + 2.0) / 0.1); // x 좌표를 그리드 인덱스로 변환
+            int grid_y = static_cast<int>((point.y + 2.0) / 0.1); // y 좌표를 그리드 인덱스로 변환
+
+            // 그리드 인덱스가 범위를 벗어나지 않도록 체크
+            if (grid_x >= 0 && grid_x < gridSize && grid_y >= 0 && grid_y < gridSize) {
+                occupiedIndices[index] = grid_map::Index(grid_x, grid_y);
+                visualMatrix[grid_y][grid_x] = 1; // 2D 행렬에 해당 인덱스를 1로 설정
+            } else {
+                occupiedIndices[index] = grid_map::Index(-1, -1); // 범위를 벗어난 인덱스
+            }
+        } else {
+            occupiedIndices[index] = grid_map::Index(-1, -1);
+        }
+    }
+
+    // 디버깅용 출력: 40x40 행렬 시각화
+    std::cout << "----------------------------------" << std::endl;
+    for (int y = gridSize - 1; y >= 0; --y) { // y 방향이 아래쪽이므로 역순으로 출력
+        for (int x = 0; x < gridSize; ++x) {
+            std::cout << visualMatrix[y][x] << " "; // 공백 추가
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "----------------------------------" << std::endl;
+
+    return occupiedIndices;
+}
