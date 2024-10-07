@@ -25,7 +25,7 @@ float[] intensities
 
 # Dependencies
 
-`rclcpp`, `sensor_msgs`, `laser_geometry`, `pcl_conversions`, `pcl_ros`
+`rclcpp`, `sensor_msgs`, `laser_geometry`, `pcl_conversions`, `pcl_ros`, `grid_map`
 
 you shoud install package `laser_geometry`. 이 패키지는 `tf2`에 의존하므로 같이 install해야 한다.
 
@@ -49,6 +49,10 @@ sudo apt install ros-foxy-tf2-tools
 
 ```bash
 sudo apt-get install ros-foxy-turtle-tf2-py ros-foxy-tf2-tools ros-foxy-tf-transformations
+```
+
+```bash
+sudo apt-get install ros-foxy-filters
 ```
 
 # Used Message

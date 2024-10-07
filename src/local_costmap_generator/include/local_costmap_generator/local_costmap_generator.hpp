@@ -14,11 +14,16 @@
 #include "tf2_ros/transform_listener.h"
 #include "tf2_eigen/tf2_eigen.h"
 
+#include <grid_map_ros/grid_map_ros.hpp>
+
 class LocalCostmapGenerator : public rclcpp::Node 
 {
 private:
     // subscriber for scan topic
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scanSubscriber_;
+
+    // publisher for costmap
+    rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr costmapPublisher_;
 
     // flag for if received scan
     bool isScanReceived_;
@@ -40,6 +45,9 @@ private:
     tf2_ros::Buffer tf_buffer_;
     tf2_ros::TransformListener tf_listener_;
 
+    // grid map object
+    grid_map::GridMap* costmap_;
+
 public:
     LocalCostmapGenerator();
 
@@ -48,4 +56,6 @@ public:
     void timerCallback();
 
     void sensorFrameToRobotFrame(pcl::PointCloud<pcl::PointXYZ>::Ptr& pcl);
+
+    // std::vector<grid_map::Index> pclToCostmap(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pcl, grid_map::GridMap* costmap) const;
 };

@@ -61,6 +61,12 @@ ros2 run joy joy_node
 ros2 run joystick joystick_node
 ```
 
+local costmap generator
+
+```bash
+ros2 run tf2_ros static_transform_publisher 0.09 0.0 0.0 0.0 0.0 0.0 "ego_racecar/laser" "ego_racecar/base_link"
+```
+
 # Hardware
 
 - Logitech G F710 Wireless Gamepad

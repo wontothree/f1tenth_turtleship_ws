@@ -23,6 +23,8 @@ find_package(tf2 REQUIRED)
 find_package(laser_geometry REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(pcl_ros REQUIRED)
+find_package(grid_map_ros REQUIRED)
+find_package(grid_map_msgs REQUIRED)
 
 include_directories(include)
 
@@ -38,7 +40,13 @@ ament_target_dependencies(local_costmap_generator_node
   laser_geometry
   pcl_conversions
   pcl_ros
+  grid_map_ros
+  grid_map_msgs
 )
+
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(local_costmap_generator_node PUBLIC OpenMP::OpenMP_CXX)
+endif()
 
 target_include_directories(local_costmap_generator_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
