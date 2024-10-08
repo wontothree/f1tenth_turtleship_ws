@@ -262,6 +262,7 @@ ros2 run tf2_ros static_transform_publisher 0.0 0.0 0.0 0.0 0.0 0.0 "ego_racecar
 ros2 run tf2_ros static_transform_publisher 0.09 0.0 0.0 0.0 0.0 0.0 "ego_racecar/laser" "ego_racecar/base_link"
 ```
 
+<<<<<<< HEAD
 이로써 tf_static/ 토픽은 발행할 수 있게 되었다. 이제 tf/를 publish할 수 있는 방법을 찾아야 한다.
 
 - /tf 토픽: 동적인 좌표 변환 정보가 퍼블리시되는 토픽. 예를 들어, 움직이는 로봇의 좌표 변환이 이 토픽을 통해 주기적으로 업데이트됩니다. 거북이의 위치와 회전 정보가 이 토픽에 퍼블리시됩니다.
@@ -294,3 +295,132 @@ std::vector<grid_map::Index> LocalCostmapGenerator::pclToCostmap(
 ```
 
 이 함수는 costmap
+=======
+tf topic
+
+```bash
+---
+transforms:
+- header:
+    stamp:
+      sec: 1728292305
+      nanosec: 845752009
+    frame_id: map
+  child_frame_id: ego_racecar/base_link
+  transform:
+    translation:
+      x: 21.603648091272074
+      y: 18.44798193306152
+      z: 0.0
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.8273751304988164
+      w: 0.5616497070524176
+---
+transforms:
+- header:
+    stamp:
+      sec: 1728292305
+      nanosec: 845752009
+    frame_id: ego_racecar/base_link
+  child_frame_id: ego_racecar/laser
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+---
+transforms:
+- header:
+    stamp:
+      sec: 1728292305
+      nanosec: 845752009
+    frame_id: ego_racecar/front_left_hinge
+  child_frame_id: ego_racecar/front_left_wheel
+  transform:
+    translation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: -0.007836380861107542
+```
+
+tf_static : rotation이 시간에 따라 변하지 않는 것을 확인할 수 있다.
+
+```bash
+- header:
+    stamp:
+      sec: 1728292426
+      nanosec: 844756926
+    frame_id: ego_racecar/base_link
+  child_frame_id: ego_racecar/back_right_wheel
+  transform:
+    translation:
+      x: 0.0
+      y: -0.12065
+      z: 0.0508
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+- header:
+    stamp:
+      sec: 1728292426
+      nanosec: 844757509
+    frame_id: ego_racecar/base_link
+  child_frame_id: ego_racecar/front_left_hinge
+  transform:
+    translation:
+      x: 0.3302
+      y: 0.12065
+      z: 0.0508
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+- header:
+    stamp:
+      sec: 1728292426
+      nanosec: 844758009
+    frame_id: ego_racecar/base_link
+  child_frame_id: ego_racecar/front_right_hinge
+  transform:
+    translation:
+      x: 0.3302
+      y: -0.12065
+      z: 0.0508
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+- header:
+    stamp:
+      sec: 1728292426
+      nanosec: 844758342
+    frame_id: ego_racecar/base_link
+  child_frame_id: ego_racecar/laser_model
+  transform:
+    translation:
+      x: 0.275
+      y: 0.0
+      z: 0.165
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+---
+```
+>>>>>>> 0607304 (update research note)
