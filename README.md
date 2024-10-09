@@ -50,9 +50,8 @@ ros2 launch vesc_driver vesc_driver_node.launch.py
 Lidar
 
 ```bash
-ifconfig
 ros2 launch urg_node2 urg_node2.launch.py
-ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 map laser
+ros2 run tf2_ros static_transform_publisher 0.09 0 0 0 0 0 map laser
 ```
 
 Joystick
