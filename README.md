@@ -9,7 +9,8 @@ This project is for 22nd F1TENTH AUTONOMOUS GRAND Grand Prix at CDC 2024.
         ├── grid_map/                             # depend
         ├── joystick/                             #
         ├── local_costmap_generator/              # 
-        └── pid_planner                           #
+        ├── mppi_planner/                         # 
+        └── pid_planner/                          #
 
 # Tested Environment
 
@@ -74,6 +75,7 @@ ros2 run tf2_ros static_transform_publisher 0.09 0.0 0.0 0.0 0.0 0.0 "ego_raceca
 - Servo motor - steering
 - [Hokuyo](https://www.hokuyo-aut.jp/search/single.php?serial=167)
 - [IMU](https://www.devicemart.co.kr/goods/view?no=15136719&srsltid=AfmBOoqRikGmc_8O2PogU1WQg-s3Kz6dxdQenrYfrV1s8TG_qI2BBXvy)
+- Intel NUC
 
 # Dependencies
 
