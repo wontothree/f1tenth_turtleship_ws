@@ -18,16 +18,20 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(grid_map_ros REQUIRED)
 
 include_directories(include/)
 
 add_executable(mppi_planner_node
-  src/mppi_planner_node.cpp
+  src/mppi_base.cpp
+  src/mppi_planner_ros.cpp
   src/mppi_planner.cpp
+  src/mppi_planner_node.cpp
 )
 
 ament_target_dependencies(mppi_planner_node
   rclcpp
+  grid_map_ros
 )
 
 target_include_directories(mppi_planner_node PUBLIC

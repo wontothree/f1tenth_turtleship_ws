@@ -1,9 +1,12 @@
-#include "local_planner/local_planner_ros.hpp"
+#include "mppi_planner/mppi_planner_ros.hpp"
 
 MPPIPlannerROS::MPPIPlannerROS() : Node("local_planner_node")
 {
     // flag for if received locql cost map
     isLocalCostMapReceived_ = false;
+
+    // flag for if received global cost map
+    isGlobalCostMapReceived_ = false;
 
     // flag for if received odometry
     isOdometryReceived_ = false;
@@ -14,25 +17,43 @@ MPPIPlannerROS::MPPIPlannerROS() : Node("local_planner_node")
     robotState_.yaw = 0.0;
     robotState_.vel = 0.0;
     robotState_.steer = 0.0;
+
+    // localizeless mode
+    isLocalizeLessMode_ = true;
 }
 
 /*
- * be called whenever received local cost map
+ * @brief called whenever received local cost map
  */
 void MPPIPlannerROS::localCostMapCallback(const grid_map_msgs::msg::GridMap::SharedPtr localCostMap)
 {
-    // Convert grid map message to internal representation
-    // if (!grid_map::GridMapRosConverter::fromMessage(*localCostMap, obstacle_map_)) {
-    //     RCLCPP_ERROR(this->get_logger(), "[MPPIPlannerROS] Failed to convert grid map to grid map");
-    //     return;
-    // }
+    // Convert grid_map_msgs::msg::GridMap 2 grid_map::GridMap
+    if (!grid_map::GridMapRosConverter::fromMessage(*localCostMap, localCostMap_)) {
+        RCLCPP_ERROR(this->get_logger(), "[MPPIPlannerROS] Failed to convert grid_map_msgs::msg::GridMap to grid_map::GridMap");
+        return;
+    }
 
     // flag for if received local cost map
     isLocalCostMapReceived_ = true;
 }
 
+
 /*
- *  be called whenever received odometry
+ * @brief called whenever received global cost map
+ */
+void MPPIPlannerROS::globalCostMapCallback(const grid_map_msgs::msg::GridMap::SharedPtr globalCostMap)
+{
+    if (!grid_map::GridMapRosConverter::fromMessage(*globalCostMap, globalCostMap_)) {
+        RCLCPP_ERROR(this->get_logger(), "[MPPIPlannerROS] Failed to convert grid_map_msgs::msg::GridMap to grid_map::GridMap");
+        return;
+    }
+
+    // flag for if received global cost map
+    isGlobalCostMapReceived_ = true;
+}
+
+/*
+ * @brief be called whenever received odometry
  */ 
 void MPPIPlannerROS::odometryCallback(const nav_msgs::msg::Odometry::SharedPtr odometry)
 {
@@ -49,7 +70,30 @@ void MPPIPlannerROS::odometryCallback(const nav_msgs::msg::Odometry::SharedPtr o
 /*
  * be called in constant period of timer
  */
-// void MPPIPlannerROS::timerCallback()
-// {
+void MPPIPlannerROS::timerCallback()
+{
+    // status check
+    if (isLocalizeLessMode_)
+    {
+        if (!isOdometryReceived_ || !isLocalCostMapReceived_)
+        {
+            RCLCPP_ERROR(this->get_logger(), "[MPPIPlannerROS] Not ready: Robot odometry: %d, Local cost map: %d", isOdometryReceived_, isLocalCostMapReceived_);
+            return;
+        }
+    }
+    else
+    {
+        if (!isOdometryReceived_ || !isLocalCostMapReceived_ || !isGlobalCostMapReceived_)
+        {
+            RCLCPP_ERROR(this->get_logger(), "[MPPIPlannerROS] Not ready: Robot odometry: %d, Local cost map: %d, Global cost map: %d", isOdometryReceived_, isLocalCostMapReceived_, isGlobalCostMapReceived_);
+            return;
+        }
+    }
 
-// }
+    // set local map
+    // set global map
+
+    // steer observer
+
+    // solve
+}

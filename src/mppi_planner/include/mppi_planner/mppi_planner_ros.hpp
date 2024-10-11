@@ -5,15 +5,12 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include <grid_map_ros/grid_map_ros.hpp>
+#include <nav_msgs/msg/odometry.hpp>  
 
 #include "mppi_types.hpp"
 
 class MPPIPlannerROS : public rclcpp::Node
 {
-public:
-    MPPIPlannerROS();
-    ~MPPIPlannerROS() {};
-
 private:
     // timer
     rclcpp::TimerBase::SharedPtr timer_;
@@ -22,8 +19,16 @@ private:
      * be called whenever received local cost map
      */
     // flag for if received local cost map
-    bool isLocalCostMapReceived_;     
-    void localCostMapCallback(const grid_map::msg::GridMap::SharedPtr localCostMap);
+    bool isLocalCostMapReceived_;
+    grid_map::GridMap localCostMap_;     
+    void localCostMapCallback(const grid_map_msgs::msg::GridMap::SharedPtr localCostMap); 
+
+    /*
+     * @brief be called if received global cost map
+     */
+    bool isGlobalCostMapReceived_;
+    grid_map::GridMap globalCostMap_;
+    void globalCostMapCallback(const grid_map_msgs::msg::GridMap::SharedPtr globalCostMap);
     
     /*
      * be called whenever received odometry
@@ -43,5 +48,10 @@ private:
     /*
      * be called in constant period of timer
      */
-    // void timerCallback();
+    bool isLocalizeLessMode_;
+    void timerCallback();
+
+public:
+    MPPIPlannerROS();
+    ~MPPIPlannerROS() {};
 };

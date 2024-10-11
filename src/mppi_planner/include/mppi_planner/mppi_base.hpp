@@ -2,19 +2,19 @@
 
 #pragma once
 
-#include "rclcpp/rclcpp.hpp"
-
 #include <grid_map_core/GridMap.hpp>
 
-#include "mppi_planner/mppi_base.hpp"
-
-class MPPIPlanner: public rclcpp::Node, public MPPIBase
+class MPPIBase
 {
 private:
-    std::unique_ptr<MPPIBase> mppiBasePtr_;
+    // local cost map object
+    grid_map::GridMap localCostMap_;
+
+    // global cost map object
+    grid_map::GridMap globalCostMap_;
 
 public:
-    MPPIPlanner();
+    MPPIBase();
 
     /*
      * @brief set local cost map
