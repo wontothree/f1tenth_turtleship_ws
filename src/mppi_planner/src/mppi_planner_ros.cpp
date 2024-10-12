@@ -1,4 +1,5 @@
 #include "mppi_planner/mppi_planner_ros.hpp"
+namespace mppi {
 
 MPPIPlannerROS::MPPIPlannerROS() : Node("local_planner_node")
 {
@@ -20,6 +21,9 @@ MPPIPlannerROS::MPPIPlannerROS() : Node("local_planner_node")
 
     // localizeless mode
     isLocalizeLessMode_ = true;
+
+    // mppi solver pointor
+    mppiSolverPtr_ = std::make_unique<mppi::cpu::MPPI>();
 }
 
 /*
@@ -36,7 +40,6 @@ void MPPIPlannerROS::localCostMapCallback(const grid_map_msgs::msg::GridMap::Sha
     // flag for if received local cost map
     isLocalCostMapReceived_ = true;
 }
-
 
 /*
  * @brief called whenever received global cost map
@@ -90,10 +93,26 @@ void MPPIPlannerROS::timerCallback()
         }
     }
 
-    // set local map
-    // set global map
+    // set local cost map
+    mppiSolverPtr_->setLocalCostMap(localCostMap_);
+    if(!isLocalizeLessMode_)
+    {
+        // set global cost map
+        mppiSolverPtr_->setGlobalCostMap(globalCostMap_);
+    }
 
     // steer observer
 
-    // solve
+    // initialize state
+    currentState_ = mppi::cpu::State::Zero();
+    currentState_[mppi::STATE_SPACE::x] = robotState_.x;
+    currentState_[mppi::STATE_SPACE::y] = robotState_.y;
+    currentState_[mppi::STATE_SPACE::yaw] = robotState_.yaw;
+    currentState_[mppi::STATE_SPACE::vel] = robotState_.vel;
+    currentState_[mppi::STATE_SPACE::steer] = robotState_.steer;
+
+    // mppi solver
+    const auto [optimalStateTrajectory_, optimalActionTrajectory_] = mppiSolverPtr_->solve(currentState_);
 }
+
+} // namespace mppi

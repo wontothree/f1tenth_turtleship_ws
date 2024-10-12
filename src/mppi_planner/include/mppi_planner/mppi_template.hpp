@@ -6,7 +6,12 @@
 #include <Eigen/Dense>
 #include <grid_map_core/GridMap.hpp>
 
-#include "local_planner/mpc_type.hpp"
+#include "mppi_planner/mppi_types.hpp"
+
+namespace mppi {
+
+namespace cpu {
+
 
 class MPPITemplate 
 {
@@ -17,6 +22,7 @@ public:
      * @brief mppi solver
      */
     //
+    virtual std::pair<StateTrajectory, ActionTrajectory> solve(const State& currentState) = 0;
 
     /* 
      * @brief setter pure virtual function for local cost map
@@ -29,4 +35,8 @@ public:
     virtual void setGlobalCostMap(const grid_map::GridMap& globalCostMap) = 0;
 
 private:
-}
+};
+
+} // namespace mppi
+
+} // namespace cpu

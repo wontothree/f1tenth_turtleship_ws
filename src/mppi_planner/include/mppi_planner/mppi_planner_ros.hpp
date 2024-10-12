@@ -7,7 +7,11 @@
 #include <grid_map_ros/grid_map_ros.hpp>
 #include <nav_msgs/msg/odometry.hpp>  
 
-#include "mppi_types.hpp"
+#include "mppi_planner/mppi_types.hpp"
+#include "mppi_planner/mppi_template.hpp"
+#include "mppi_planner/mppi.hpp"
+
+namespace mppi {
 
 class MPPIPlannerROS : public rclcpp::Node
 {
@@ -45,13 +49,21 @@ private:
     bool isOdometryReceived_;
     void odometryCallback(const nav_msgs::msg::Odometry::SharedPtr odometry);
 
+
+    // flag for localizeless mode
+    bool isLocalizeLessMode_;
+    // mppi solver pointer
+    std::unique_ptr<mppi::cpu::MPPITemplate> mppiSolverPtr_;
+    // current state
+    mppi::cpu::State currentState_;
     /*
      * be called in constant period of timer
      */
-    bool isLocalizeLessMode_;
     void timerCallback();
 
 public:
     MPPIPlannerROS();
     ~MPPIPlannerROS() {};
 };
+
+} // namespace mppi
