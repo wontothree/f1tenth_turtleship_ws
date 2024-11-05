@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <Eigen/Dense>
 
 namespace svg_mppi {
 
@@ -44,7 +45,7 @@ namespace planning {
     using StateMeanTrajectory = Eigen::MatrixXd;
     using ControlMeanTrajectory = Eigen::MatrixXd;
 
-    using ControlCovarianceTrajectory = Estd::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;
+    using ControlCovarianceTrajectory = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;
 
     using StateTrajectoryBatch = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;
     using ControlTrajectoryBatch = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;

@@ -1,3 +1,7 @@
+#pragma once
+
+#include "rclcpp/rclcpp.hpp"
+#include <grid_map_core/GridMap.hpp>
 
 #include "svg_mppi_planner/common.hpp"
 
@@ -16,20 +20,21 @@ public:
 SVGMPPI();
 ~SVGMPPI() {};
 
-std::pair<ControlTrajectory, double> solve(const State& currnet_state);
+std::pair<ControlMeanTrajectory, double> solve(const State& current_state);
 
 std::pair<std::vector<double>, std::vector<double>> calculate_sample_cost(
     const State& current_state,
     const grid_map::GridMap& local_cost_map,
-    StateTrajectoryBatch* state_trajectory_candidates,
+    StateTrajectoryBatch* state_trajectory_candidates
 ) const;
-StateTrajectory predict_state_trajectory(
-    const ControlTrajectory& control_trajectory,
+
+StateMeanTrajectory predict_state_trajectory(
+    const ControlMeanTrajectory& control_trajectory,
     const State& current_state,
     const grid_map::GridMap& local_cost_map
 ) const;
 
-}
+};
 
 
 } // namespace planning

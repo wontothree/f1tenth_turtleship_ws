@@ -613,7 +613,6 @@ void MPPI::testComputeNormalPDFValue() {
     std::cout << "PDF Values:\n" << pdf << std::endl;
 }
 
-
 } // namespace trajectory
 
 } // namespace mppi

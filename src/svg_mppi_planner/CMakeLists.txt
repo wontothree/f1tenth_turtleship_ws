@@ -26,6 +26,7 @@ include_directories(include/)
 add_executable(svg_mppi_planner_node 
   src/svg_mppi_planner_node.cpp
   src/svg_mppi_planner_ros.cpp
+  src/svg_mppi.cpp
 )
 
 ament_target_dependencies(svg_mppi_planner_node
