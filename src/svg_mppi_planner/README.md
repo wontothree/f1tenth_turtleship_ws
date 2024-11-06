@@ -15,7 +15,8 @@
 
 Varnila MPPI core sudo code
 
-![](./icons/varnila_mppi_sudo.png){: .align-center width="500" height="300"}
+<p align="center"><img src="./icons/varnila_mppi_sudo.png" width="50%" height="50%"/></p>
+
 
 1st loop: calculate_sample_costs
 
