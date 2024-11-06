@@ -47,8 +47,8 @@ namespace planning {
 
     using ControlCovarianceTrajectory = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;
 
-    using StateTrajectoryBatch = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;
-    using ControlTrajectoryBatch = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;
+    using StateMeanTrajectoryBatch = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;
+    using ControlMeanTrajectoryBatch = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;
 } // namespace planning
 
 } // namespace svg_mppi
