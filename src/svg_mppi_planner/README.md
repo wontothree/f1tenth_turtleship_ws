@@ -11,9 +11,9 @@
         ├── svg_mppi_planner_ros.cpp              #
         └── svg_mppi.cpp                          #
 
-# Implementation
+# Varnila MPPI
 
-Varnila MPPI core sudo code
+Core sudo code
 
 <p align="center"><img src="./icons/varnila_mppi_sudo.png" width="50%" height="50%"/></p>
 
@@ -48,3 +48,4 @@ Varnila MPPI core sudo code
 ```
 
 - calculate_sample_weights
+
