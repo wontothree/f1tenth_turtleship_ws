@@ -15,6 +15,7 @@ private:
     const double prediction_interval_ = 0.05; // s
     const double lf_ = 0.189;
     const double lr_ = 0.135;
+    const double collision_weight_ = 1.0;
 
 public:
 SVGMPPI();
@@ -22,7 +23,7 @@ SVGMPPI();
 
 std::pair<ControlMeanTrajectory, double> solve(const State& current_state);
 
-std::pair<std::vector<double>, std::vector<double>> calculate_sample_cost(
+std::pair<std::vector<double>, std::vector<double>> calculate_sample_costs(
     const State& current_state,
     const grid_map::GridMap& local_cost_map,
     StateTrajectoryBatch* state_trajectory_candidates
@@ -34,8 +35,12 @@ StateMeanTrajectory predict_state_trajectory(
     const grid_map::GridMap& local_cost_map
 ) const;
 
-};
+std::pair<double, double> calculate_state_cost(
+    const StateMeanTrajectory state_trajectory,
+    const grid_map::GridMap& local_cost_map
+) const;
 
+};
 
 } // namespace planning
 } // namespace svg_mppi

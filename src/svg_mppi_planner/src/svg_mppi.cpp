@@ -17,7 +17,7 @@ std::pair<ControlMeanTrajectory, double> SVGMPPI::solve(const State& current_sta
 }
 
 
-std::pair<std::vector<double>, std::vector<double>> SVGMPPI::calculate_sample_cost(
+std::pair<std::vector<double>, std::vector<double>> SVGMPPI::calculate_sample_costs(
     const State& current_state,
     const grid_map::GridMap& local_cost_map,
     StateTrajectoryBatch* state_trajectory_candidates
@@ -78,6 +78,38 @@ StateMeanTrajectory SVGMPPI::predict_state_trajectory(
     }
 
     return state_trajectory_;
+}
+
+// 하나의 state trajectory에 대한 하나의 비용을 계산한다.
+std::pair<double, double> SVGMPPI::calculate_state_cost(
+    const StateMeanTrajectory state_trajectory,
+    const grid_map::GridMap& local_cost_map
+) const
+{
+    // calculate cost for each state trajectory
+    double collision_cost_sum_ = 0.0;
+    for (size_t i = 0; i < prediction_step_size_; i++) {
+        // state cost
+        State state_ = state_trajectory.row(i);
+
+        double collision_cost_ = 0.0;
+        if (local_cost_map.isInside(grid_map::Position(state_(STATE_SPACE::x), state_(STATE_SPACE::y)))) {
+            collision_cost_ = local_cost_map.atPosition("collision", grid_map::Position(state_(STATE_SPACE::x), state_(STATE_SPACE::y)));
+        }
+
+        collision_cost_sum_ += collision_weight_ * collision_cost_;
+    }
+
+    // terminal cost
+    const State terminal_state_ = state_trajectory.row(prediction_step_size_ - 1);
+    double collision_cost_ = 0.0;
+    if (local_cost_map.isInside(grid_map::Position(terminal_state_(STATE_SPACE::x), terminal_state_(STATE_SPACE::y)))) {
+        collision_cost_ = local_cost_map.atPosition("collision", grid_map::Position(terminal_state_(STATE_SPACE::x), terminal_state_(STATE_SPACE::y)));
+    }
+
+    collision_cost_sum_ += collision_weight_ * collision_cost_;
+
+    return std::make_pair(collision_cost_sum_, collision_cost_sum_);
 }
 
 } // namespace planning

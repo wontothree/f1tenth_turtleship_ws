@@ -833,3 +833,74 @@ solve에서 사용되는 함수
 |12|updateMeanAndCovariance|||
 |13|interpolate|||
 |14|interpolate|||
+
+*11/06/2024*
+
+Varnila MPPI Sudo Code
+
+```py
+Given:
+    K: Number of samples
+    N: Number of timesteps
+    (u0, u1, ..., uN-1): Initial control sequence
+    Δt, x_t0, f, G, B, B_E: System/sampling dynamics
+    φ, q, R, λ: Cost parameters
+    u_init: Value to initialize new controls to
+
+while task is not completed:
+    for k from 0 to K - 1:
+        x = x_t0
+        for i from 1 to N - 1:
+            # Update state based on dynamics with noise
+            x_i+1 = x_i + (f + G * u_i) * Δt + B_E * ε_i,k * sqrt(Δt)
+            
+            # Accumulate the cost for trajectory
+            S_tilde(τ_k) += φ(x_i, u_i, ε_i,k, t_i)
+
+    for i from 0 to N - 1:
+        # Update control sequence based on weighted samples
+        u_i = u_i + H_inv * G * sum_over_k(exp(-S_tilde(τ_k) / λ) * ε_i,k) / sum_over_k(exp(-S_tilde(τ_k) / λ))
+
+    # Apply the first control to actuators
+    send u_0 to actuators
+    
+    # Shift control sequence
+    for i from 0 to N - 2:
+        u_i = u_i+1
+    u_N-1 = u_init
+
+    # Update the current state based on feedback
+    Update current state
+    
+    # Check if task is completed
+    check for task completion
+```
+
+Implementation
+
+```py
+    for k from 0 to K - 1:
+        x = x_t0
+        for i from 1 to N - 1:
+            # Update state based on dynamics with noise
+            x_i+1 = x_i + (f + G * u_i) * Δt + B_E * ε_i,k * sqrt(Δt)
+            
+            # Accumulate the cost for trajectory
+            S_tilde(τ_k) += φ(x_i, u_i, ε_i,k, t_i)
+
+```
+
+- calculate_sample_costs
+    - predict_state_trajectory
+        - predict_constant_speed
+        - predict_linear_speed
+        - predict_reference_speed
+    - calculate_state_costs
+
+```py
+    for i from 0 to N - 1:
+        # Update control sequence based on weighted samples
+        u_i = u_i + H_inv * G * sum_over_k(exp(-S_tilde(τ_k) / λ) * ε_i,k) / sum_over_k(exp(-S_tilde(τ_k) / λ))
+```
+
+- calculate_sample_weights
