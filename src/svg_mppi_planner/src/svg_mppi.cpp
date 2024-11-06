@@ -130,6 +130,16 @@ std::pair<double, double> SVGMPPI::calculate_state_cost(
     return std::make_pair(collision_cost_sum_, collision_cost_sum_);
 }
 
+ControlMeanTrajectoryBatch SVGMPPI::approximate_gradient_posterior_batch() const
+{
+    ControlMeanTrajectoryBatch gradient_log_posterior_batch_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+        10, Eigen::MatrixXd::Zero(prediction_step_size_, STATE_SPACE::dim) // 10은 임시
+    );
+
+
+
+}
+
 void SVGMPPI::test()
 {   
     // test function predict_constant_speed

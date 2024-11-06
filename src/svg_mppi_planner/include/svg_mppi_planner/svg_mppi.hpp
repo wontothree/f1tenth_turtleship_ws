@@ -45,7 +45,7 @@ std::pair<double, double> calculate_state_cost(
     const grid_map::GridMap& local_cost_map
 ) const;
 
-
+ControlMeanTrajectoryBatch approximate_gradient_posterior_batch() const;
 
 void test();
 
