@@ -15,7 +15,7 @@
 
 Varnila MPPI core sudo code
 
-![](./icons/varnila_mppi_sudo.png)
+![](./icons/varnila_mppi_sudo.png){: .align-center width="500" height="300"}
 
 1st loop: calculate_sample_costs
 
@@ -33,7 +33,7 @@ Varnila MPPI core sudo code
 
 - calculate_sample_costs
     - predict_state_trajectory
-        predict_constant_speed
+        - predict_constant_speed
         - predict_linear_speed
         - predict_reference_speed
     - calculate_state_cost
