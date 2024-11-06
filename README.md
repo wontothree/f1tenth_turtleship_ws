@@ -9,6 +9,7 @@ This project is for 22nd F1TENTH AUTONOMOUS GRAND Grand Prix at CDC 2024.
         ├── grid_map/                             # depend
         ├── joystick/                             #
         ├── local_costmap_generator/              # 
+        ├── svg_mppi_planner/                     # 
         ├── mppi_planner/                         # 
         └── pid_planner/                          #
 
