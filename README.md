@@ -2,7 +2,7 @@
 
 This project is for 22nd F1TENTH AUTONOMOUS GRAND Grand Prix at CDC 2024.
 
-![](/f1tenth_turtleship_ws/icons/f1tenth_cdc_2024_banner.png)
+![](./icons/f1tenth_cdc_2024_banner.png)
 
 
     f1tenth_turtleship_ws
