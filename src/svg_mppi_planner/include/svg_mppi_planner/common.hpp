@@ -42,6 +42,9 @@ namespace planning {
     using State = Eigen::Matrix<double, STATE_SPACE::dim, 1>;
     using Control = Eigen::Matrix<double, CONTROL_SPACE::dim, 1>;
 
+    using StateTrajectory = Eigen::MatrixXd;
+    using ControlTrajectory = Eigen::MatrixXd;
+    
     using StateMeanTrajectory = Eigen::MatrixXd;
     using ControlMeanTrajectory = Eigen::MatrixXd;
 
