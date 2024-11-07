@@ -1,0 +1,29 @@
+{
+  "name": "f1tenth",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.black-formatter",
+        "mhutchie.git-graph",
+        "esbenp.prettier-vscode",
+        "streetsidesoftware.code-spell-checker",
+        "wayou.vscode-todo-highlight",
+        "GitHub.copilot",
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  "postCreateCommand": "scripts/init.sh",
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/${containerWorkspaceFolder}/scripts"
+  }
+}
