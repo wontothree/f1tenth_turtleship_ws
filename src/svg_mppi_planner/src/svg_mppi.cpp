@@ -213,9 +213,8 @@ void SVGMPPI::random_sampling(
             }
         }
 
-        // add noise to mean
         // sampling control trajectory with non-biased (around zero) sampling rate
-        if (i < static_cast<size_t>((1 - non_biased_sampling_rate_) * sample_number)) {
+        if (i < static_cast<size_t>((1 - non_biased_sampling_rate_) * sample_number_)) {
             // biased sampling
             noised_control_mean_sample_trajectory_batch_[i] = control_mean_trajectory_ + noise_sample_trajectory_batch_[i];
         } else {
@@ -223,18 +222,17 @@ void SVGMPPI::random_sampling(
             noised_control_mean_sample_trajectory_batch_[i] = noise_sample_trajectory_batch_[i];
         }
 
-        // 여기부터 할 차례 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // clip input with control input constraints
         for (size_t j = 0; j < CONTROL_SPACE::dim; j++) {
             for (size_t k = 0; k < prediction_horizon_ - 1; k++) {
-                // noised_control_mean_sample_trajectory_batch_[i](k, j) = std::clamp(noised_control_mean_sample_trajectory_batch_[i](k, j));
+                noised_control_mean_sample_trajectory_batch_[i](k, j) = std::clamp(
+                    noised_control_mean_sample_trajectory_batch_[i](k, j),
+                    min_control_[j],
+                    max_control_[j]
+                );
             }
         }
     }
-
-
 }
 
 void SVGMPPI::test()
@@ -261,45 +259,49 @@ void SVGMPPI::test()
 
     // -------------------------------------------------------------------------------------------------------------------------------
 
-    // test variable normal_distribution_pointer_
-
-    // 정규 분포의 평균과 표준편차 출력
-    // for (size_t i = 0; i < normal_distribution_pointer_->size(); ++i) {
-    //     std::cout << "정규 분포 집합 " << i + 1 << ":" << std::endl;
-    //     for (size_t j = 0; j < CONTROL_SPACE::dim; ++j) {
-    //         std::cout << "  차원 " << j + 1 << " - 평균: "
-    //                     << (*normal_distribution_pointer_)[i][j].mean()
-    //                     << ", 표준편차: " << (*normal_distribution_pointer_)[i][j].stddev()
-    //                     << std::endl;
-    //     }
-    // }
-
-    // -------------------------------------------------------------------------------------------------------------------------------
-
     // test function random_sampling
+    ControlMeanTrajectory control_mean_trajectory_tmp_ = Eigen::MatrixXd::Zero(
+        prediction_horizon_ - 1, CONTROL_SPACE::dim
+    );
+    control_mean_trajectory_tmp_ << 0.1, 0.2, 0.3;
+    // std::cout << control_mean_trajectory_tmp_ << std::endl;
 
-    // Eigen::MatrixXd 형태로 ControlMeanTrajectory 초기화
-    planning::ControlMeanTrajectory control_mean_trajectory(3, 1);  // 3x1 크기 행렬
-    control_mean_trajectory << 0.5, 0.7, 0.9;  // 예시 제어 평균 값 (3x1 행렬)
+    ControlCovarianceTrajectory control_covariance_trajectory_tmp_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+        prediction_horizon_ - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
+    );
+    control_covariance_trajectory_tmp_[0] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.1;
+    control_covariance_trajectory_tmp_[1] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.2;
+    control_covariance_trajectory_tmp_[2] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.3;
+    // std::cout << control_covariance_trajectory_tmp_[0] << std::endl;
+    // std::cout << control_covariance_trajectory_tmp_[1] << std::endl;
+    // std::cout << control_covariance_trajectory_tmp_[2] << std::endl;
 
-    // Eigen::MatrixXd 형태로 ControlCovarianceTrajectory 초기화
-    planning::ControlCovarianceTrajectory control_covariance_trajectory;
-    control_covariance_trajectory.push_back(Eigen::MatrixXd::Identity(1, 1) * 0.1);  // 1x1 공분산 행렬
-    control_covariance_trajectory.push_back(Eigen::MatrixXd::Identity(1, 1) * 0.2);  // 1x1 공분산 행렬
-    control_covariance_trajectory.push_back(Eigen::MatrixXd::Identity(1, 1) * 0.3);  // 1x1 공분산 행렬 
 
+    // print member variable normal_distribution_pointer_
+    std::cout << "normal_distribution_pointer_:\n";
+    for (size_t i = 0; i < normal_distribution_pointer_->size(); ++i) {
+        for (size_t j = 0; j < CONTROL_SPACE::dim; ++j) {
+            std::cout 
+                << (*normal_distribution_pointer_)[i][j].mean()
+                << " "
+                << (*normal_distribution_pointer_)[i][j].stddev()
+                << std::endl;
+        }
+    }
 
-    // // 제어 평균 출력
-    // std::cout << "Control Mean Trajectory:" << std::endl;
-    // std::cout << control_mean_trajectory << std::endl;
+    // print noise_sample_trajectory_batch_
+    std::cout << "noise_sample_trajectory_batch_:\n";
+    for (size_t i = 0; i < noise_sample_trajectory_batch_.size(); ++i) {
+        std::cout << noise_sample_trajectory_batch_[i] << "\n";
+    }
 
-    // // 제어 공분산 출력
-    // std::cout << "\nControl Covariance Trajectory:" << std::endl;
-    // for (size_t i = 0; i < control_covariance_trajectory.size(); ++i) {
-    //     std::cout << "Covariance at time " << i + 1 << ":\n" << control_covariance_trajectory[i] << std::endl;
-    // }
+    // print noised_control_mean_sample_trajectory_batch_
+    std::cout << "noise_sample_trajectory_batch_:\n";
+    for (size_t i = 0; i < noised_control_mean_sample_trajectory_batch_.size(); ++i) {
+        std::cout << noised_control_mean_sample_trajectory_batch_[i] << "\n";
+    }
 
-    random_sampling(control_mean_trajectory, control_covariance_trajectory);
+    // random_sampling(control_mean_trajectory_tmp_, control_covariance_trajectory_tmp_);
 
     // for (size_t i = 0; i < normal_distribution_pointer_->size(); i++) {
     //     std::cout << "Normal Distribution Set " << i + 1 << ":" << std::endl;
@@ -310,23 +312,23 @@ void SVGMPPI::test()
     //     }
     // }
 
-    std::cout << "Noise Sample Trajectory Batch:" << std::endl;
-    for (size_t i = 0; i < sample_number_; i++) {
-        std::cout << "Sample " << i + 1 << ":" << std::endl;
-        for (size_t j = 0; j < prediction_horizon_ - 1; j++) {
-            for (size_t k = 0; k < CONTROL_SPACE::dim; k++) {
-                std::cout << noise_sample_trajectory_batch_[i](j, k) << " ";
-            }
-            std::cout << std::endl;  // 각 행을 출력 후 줄 바꿈
-        }
-        std::cout << "------------------------------" << std::endl;
-    }
+    // std::cout << "Noise Sample Trajectory Batch:" << std::endl;
+    // for (size_t i = 0; i < sample_number_; i++) {
+    //     std::cout << "Sample " << i + 1 << ":" << std::endl;
+    //     for (size_t j = 0; j < prediction_horizon_ - 1; j++) {
+    //         for (size_t k = 0; k < CONTROL_SPACE::dim; k++) {
+    //             std::cout << noise_sample_trajectory_batch_[i](j, k) << " ";
+    //         }
+    //         std::cout << std::endl;  // 각 행을 출력 후 줄 바꿈
+    //     }
+    //     std::cout << "------------------------------" << std::endl;
+    // }
 
     // -------------------------------------------------------------------------------------------------------------------------------
 
     // test function calculate_state_cost
 
-
+    // -------------------------------------------------------------------------------------------------------------------------------
 } 
 
 } // namespace planning

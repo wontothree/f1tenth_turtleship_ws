@@ -13,9 +13,9 @@ namespace planning {
 
 class SVGMPPI {
 private:
-    const size_t sample_number_ = 10;
-    const size_t prediction_step_size_ = 3;
-    const size_t prediction_horizon_ = 3;
+    const size_t sample_number_ = 5;
+    const size_t prediction_step_size_ = 4;
+    const size_t prediction_horizon_ = 4;
     const double prediction_interval_ = 0.05; // s
     const double lf_ = 0.189;
     const double lr_ = 0.135;
@@ -23,6 +23,8 @@ private:
     const size_t num_svgd_iteration_ = 3;
     const size_t thread_number_ = 4;
     const double non_biased_sampling_rate_ = 0.1;
+    const double max_steering_ = 0.45;
+    const double min_steering_ = -0.45;
 
     ControlMeanTrajectory control_mean_trajectory_;
     ControlCovarianceTrajectory control_covariance_trajectory_;
@@ -34,6 +36,8 @@ private:
     // generate random noise
     std::vector<std::mt19937> random_number_generators_;
     std::unique_ptr<std::vector<std::array<std::normal_distribution<>, CONTROL_SPACE::dim>>> normal_distribution_pointer_;
+    const std::array<double, CONTROL_SPACE::dim> max_control_ = {max_steering_};
+    const std::array<double, CONTROL_SPACE::dim> min_control_ = {min_steering_};
 
 public:
 SVGMPPI();
