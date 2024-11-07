@@ -2,6 +2,9 @@
 
 This project is for 22nd F1TENTH AUTONOMOUS GRAND Grand Prix at CDC 2024.
 
+![](/f1tenth_turtleship_ws/icons/f1tenth_cdc_2024_banner.png)
+
+
     f1tenth_turtleship_ws
     └── src/
         ├── vesc/                                 # depend
@@ -20,20 +23,24 @@ This project is for 22nd F1TENTH AUTONOMOUS GRAND Grand Prix at CDC 2024.
 
 # Getting Started
 
-Clone this repository.
+## Install Dependencies
 
 ```bash
 git clone https://github.com/wontothree/f1tenth_turtleship_ws.git
-```
 
-Install dependencies
-
-```bash
 rosdep update
-rosdep install -i --from-paths urg_node2
+rosdep install --from-paths src --ignore-src -r -y
+
+sudo apt-get install ros-foxy-laser-proc
+sudo apt-get install ros-foxy-cv-bridge
+sudo apt-get install ros-foxy-filters
+sudo apt-get install ros-foxy-serial-driver
+sudo apt-get install ros-foxy-pcl-conversions
+sudo apt-get install ros-foxy-pcl-conversions
+sudo apt-get install ros-foxy-pcl-ros
 ```
 
-Build
+## Build
 
 ```bash
 source /opt/ros/foxy/setup.bash
@@ -41,11 +48,16 @@ source install/local_setup.bash
 colcon build --symlink-install
 ```
 
+## Run Packages
+
 Vesc
 
 ```bash
+rosdep install -i --from-paths urg_node2
+
 lsusb
 ls /dev/input*
+
 ros2 launch vesc_driver vesc_driver_node.launch.py
 ```
 
