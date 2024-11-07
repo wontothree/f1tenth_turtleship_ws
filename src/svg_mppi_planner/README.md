@@ -11,11 +11,11 @@
         ├── svg_mppi_planner_ros.cpp              #
         └── svg_mppi.cpp                          #
 
-# Varnila MPPI
+# Model Predictive Path Integral Control
 
 Core sudo code
 
-<p align="center"><img src="./icons/varnila_mppi_sudo.png" width="50%" height="50%"/></p>
+<p align="center"><img src="./icons/mppi_sudo.png" width="50%" height="50%"/></p>
 
 
 1st loop: calculate_sample_costs
@@ -49,3 +49,8 @@ Core sudo code
 
 - calculate_sample_weights
 
+# Stein Variational Gradient Descent
+
+<p align="center"><img src="./icons/svgd_sudo.png"/></p>
+
+# Variables and Functions
