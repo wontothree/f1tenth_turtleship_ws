@@ -19,11 +19,33 @@
 class LocalCostmapGenerator : public rclcpp::Node 
 {
 private:
+    //// constants: 이곳의 상수들을 수정하여 grid map의 크기, 해상도, 업데이트 주기, 
+    //// robot frame(base frame) 이름, sensor frame(laser frame) 이름을 조정할 수 있다.
+
+    // grid map 의 인덱스 개수. 이는 n x n 2D grid map에서 n을 의미한다.
+    const int gridSize = 40;
+
+    const double gridLength = 6.0; // grid map의 길이 (meter)
+
+    const double resolution = gridLength / gridSize; // grid map의 해상도 (meter)
+
+    // grid map을 업데이트하는 주기(ms)
+    const int timerPeriod = 1000; 
+
+    // frame id
+    const std::string robotFrameId_ = "ego_racecar/base_link";
+    const std::string sensorFrameId_ = "ego_racecar/laser";
+    
+    //// variables:
+
     // subscriber for scan topic
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scanSubscriber_;
 
     // publisher for costmap
     rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr costmapPublisher_;
+
+    // publisher for occupancy grid
+    rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr costmapPublisher2_;
 
     // flag for if received scan
     bool isScanReceived_;
@@ -48,14 +70,14 @@ private:
     // grid map object
     grid_map::GridMap* costmap_;
 
-public:
-    LocalCostmapGenerator();
-
     void scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan);
-
-    void timerCallback();
 
     void sensorFrameToRobotFrame(pcl::PointCloud<pcl::PointXYZ>::Ptr& pcl);
 
+    void timerCallback();
+
     std::vector<grid_map::Index> pclToCostmap(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pcl, grid_map::GridMap* costmap) const;
+
+public:
+    LocalCostmapGenerator();
 };
