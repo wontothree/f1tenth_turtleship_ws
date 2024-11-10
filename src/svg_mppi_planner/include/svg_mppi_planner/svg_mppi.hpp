@@ -21,8 +21,6 @@ private:
     const double lf_ = 0.189;
     const double lr_ = 0.135;
     const double collision_weight_ = 1.0;
-    const double svgd_step_size_ = 0.005;
-    const size_t svgd_iteration_number_ = 3;
     const std::array<double, CONTROL_SPACE::dim> steering_control_covariance_for_gradient_estimation_ = {0.01};
     const double max_steering_ = 0.45;
     const double min_steering_ = -0.45;
@@ -33,6 +31,11 @@ private:
     const double max_steering_covariance_ = 0.1;
     const double lambda_ = 3.0;
     const double alpha_ = 0.1;
+
+    // Constant for SVGD
+    const size_t guide_sample_number_ = 1;
+    const size_t svgd_iteration_number_ = 3;
+    const double svgd_step_size_ = 0.005;
 
     // for random_sampling
     ControlSequence control_mean_sequence_;
@@ -62,6 +65,11 @@ public:
     SVGMPPI();
     ~SVGMPPI() {};
 
+private:
+    /**
+     * @brief
+     * @param initial_state 
+     */
     std::pair<ControlSequence, double> solve(
         const State& initial_state
     );
@@ -270,6 +278,43 @@ public:
         }
     }
 
+    void test()
+    {
+        // State state_tmp_;
+        // state_tmp_ << 0.0, 0.0, 0.0, 1.0, 0.1;
+        // std::cout << "state_tmp_" << std::endl;
+        // std::cout << state_tmp_ << std::endl;
+
+
+        // ControlSequence control_mean_trajectory_tmp_ = Eigen::MatrixXd::Zero(
+        //     prediction_horizon_ - 1, CONTROL_SPACE::dim
+        // );
+        // control_mean_trajectory_tmp_ << 0.1, 0.2, 0.3;
+        // std::cout << "control_mean_trajectory_tmp_" << std::endl;
+        // std::cout << control_mean_trajectory_tmp_ << std::endl;
+
+        // predict_state_sequence(state_tmp_, control_mean_trajectory_tmp_);
+
+        // solve(state_tmp_);
+
+        // std::cout << "Updated Control Sequence:" << std::endl;
+        // std::cout << updated_control_sequence_ << std::endl;
+
+        // std::cout << "Collision Rate:" << std::endl;
+        // std::cout << collision_rate_ << std::endl;
+
+        // ------------------------------------------------------------------------------------------------------------------------
+
+        // function approximate_gradient_log_posterior_batch
+        State state_tmp_;
+        state_tmp_ << 0.0, 0.0, 0.0, 1.0, 0.1;
+        std::cout << "state_tmp_" << std::endl;
+        std::cout << state_tmp_ << std::endl;
+
+        auto a = approximate_gradient_log_posterior_batch(state_tmp_);
+
+        // std::cout << a << std::endl;
+    }
 };
 
 } // namespace planning
