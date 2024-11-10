@@ -82,8 +82,12 @@ public:
         const ControlCovarianceSequence control_covariance_sequence
     );
 
+    // --------------------------------------------------------------------------------------------------------------------------------
+    // to do 이진우
+
     /**
-     * @brief
+     * @brief 모든 샘플에 대한 각각의 state cost를 계산한다.
+     * @param initial_state 초기 상태
      */
     std::pair<std::vector<double>, std::vector<double>> calculate_state_cost_batch(
         const State& initial_state,
@@ -91,26 +95,31 @@ public:
         StateSequenceBatch* state_sequence_batch,
         ControlSequenceBatch& control_sequence_batch
     ) const;
+
     /**
-     * @brief
+     * @brief 하나의 state sequence를 예측한다.
      */
     StateSequence predict_state_sequence(
         const State& initial_state,
         const ControlSequence& control_sequence
     ) const;
+
     double predict_constant_speed(
         const double& current_speed
     ) const
     {
         return current_speed;
     }
+
     /**
-     * @brief
+     * @brief 하나의 sequence에 대한 cost를 계산한다.
      */
     std::pair<double, double> calculate_state_sequence_cost(
         const StateSequence state_sequence,
         const grid_map::GridMap& local_cost_map
     ) const;
+
+    // --------------------------------------------------------------------------------------------------------------------------------
 
     /**
      * @brief Computes the weights for state trajectories using softmax
