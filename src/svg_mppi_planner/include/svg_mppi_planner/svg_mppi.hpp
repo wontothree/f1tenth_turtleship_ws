@@ -21,12 +21,18 @@ private:
     const double lf_ = 0.189;
     const double lr_ = 0.135;
     const double collision_weight_ = 1.0;
+    const double svgd_step_size_ = 0.005;
     const size_t svgd_iteration_number_ = 3;
     const std::array<double, CONTROL_SPACE::dim> steering_control_covariance_for_gradient_estimation_ = {0.01};
     const double max_steering_ = 0.45;
     const double min_steering_ = -0.45;
     const double non_biased_sampling_rate_ = 0.1;
     const double grad_lambda_ = 3.0;
+    const double gaussian_fitting_lambda_ = 0.1;
+    const double min_steering_covariance_ = 0.001;
+    const double max_steering_covariance_ = 0.1;
+    const double lambda_ = 3.0;
+    const double alpha_ = 0.1;
 
     // for random_sampling
     ControlSequence control_mean_sequence_;
@@ -48,6 +54,9 @@ private:
     // local cost map
     grid_map::GridMap local_cost_map_;
 
+    // solve
+    std::vector<double> costs_;
+    ControlSequence nominal_control_sequence_;
 
 public:
     SVGMPPI();
@@ -61,8 +70,7 @@ public:
      * @brief
      */
     ControlSequenceBatch approximate_gradient_log_posterior_batch(
-        const State& initial_state,
-        const ControlSequence control_sequence
+        const State& initial_state
     );
     /**
      * @brief
@@ -174,6 +182,62 @@ public:
         }
 
         return softmax_costs_;
+    }
+
+    /**
+     * @brief Gaussian fitting
+     */
+    std::pair<double, double> gaussian_fitting(
+        const std::vector<double>& x,
+        const std::vector<double>& y
+    ) const
+    {
+        assert(x.size() == y.size());
+
+        // Should y is larger than 0 for log function
+        std::vector<double> y_hat(y.size(), 0.0);
+        std::transform(y.begin(), y.end(), y_hat.begin(), [](double y) { return std::max(y, 1e-10); });
+
+        // const double epsilon = 1e-8;
+        Eigen::Matrix3d A = Eigen::Matrix3d::Zero();
+        Eigen::Vector3d b = Eigen::Vector3d::Zero();
+        for (size_t i = 0; i < x.size(); i++) {
+            const double y_hat_2 = y_hat[i] * y_hat[i];
+            const double y_hat_log = std::log(y_hat[i]);
+
+            A(0, 0) += y_hat_2;
+            A(0, 1) += y_hat_2 * x[i];
+            A(0, 2) += y_hat_2 * x[i] * x[i];
+
+            A(1, 0) += y_hat_2 * x[i];
+            A(1, 1) += y_hat_2 * x[i] * x[i];
+            A(1, 2) += y_hat_2 * x[i] * x[i] * x[i];
+
+            A(2, 0) += y_hat_2 * x[i] * x[i];
+            A(2, 1) += y_hat_2 * x[i] * x[i] * x[i];
+            A(2, 2) += y_hat_2 * x[i] * x[i] * x[i] * x[i];
+
+            b(0) += y_hat_2 * y_hat_log;
+            b(1) += y_hat_2 * x[i] * y_hat_log;
+            b(2) += y_hat_2 * x[i] * x[i] * y_hat_log;
+        }
+
+        // solve Au = b
+        const Eigen::Vector3d u = A.colPivHouseholderQr().solve(b);
+
+        // calculate mean and variance
+
+        // original
+        // const double mean = -u(1) / (2.0 * u(2));
+        // const double variance = std::sqrt(-1.0 / (2.0 * u(2)));
+
+        // To avoid nan;
+        const double eps = 1e-5;
+        const double mean = -u(1) / (2.0 * std::min(u(2), -eps));
+        // const double variance = std::sqrt(1.0 / (2.0 * std::abs(std::min(u(2), -eps))));
+        const double variance = std::sqrt(1.0 / (2.0 * std::abs(u(2))));
+
+        return std::make_pair(mean, variance);
     }
 
     void set_local_cost_map(
