@@ -16,8 +16,12 @@ LocalCostmapGenerator::LocalCostmapGenerator() : Node("local_costmap_generator_n
     );
 
     // publisher for costmap
-    costmapPublisher_ = this->create_publisher<grid_map_msgs::msg::GridMap>("costmap_topic", 10);
-    costmapPublisher2_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("costmap_topic_oc", 10);
+    costmapPublisher_ = this->create_publisher<grid_map_msgs::msg::GridMap>(
+        "costmap_topic", 10
+    );
+    costmapPublisher2_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>(
+        "costmap_topic_oc", 10
+    );
     
     // flag for if received scan
     isScanReceived_ = false;

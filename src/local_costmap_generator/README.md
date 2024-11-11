@@ -17,7 +17,18 @@ float[] ranges
 float[] intensities
 ```
 
+```cpp
+scanSubscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+    "scan", 10, std::bind(&LocalCostmapGenerator::scanCallback, this, std::placeholders::_1)
+);
+```
+
 # Publisheed Topics
+
+```cpp
+costmapPublisher_ = this->create_publisher<grid_map_msgs::msg::GridMap>("costmap_topic", 10);
+costmapPublisher2_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("costmap_topic_oc", 10);
+```
 
 # Nodes
 

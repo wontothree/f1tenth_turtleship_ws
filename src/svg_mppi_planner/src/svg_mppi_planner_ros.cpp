@@ -30,8 +30,6 @@ void SVGMPPIPlannerROS::local_cost_map_callback(
 
     // flag for if received local cost map
     isLocalCostMapReceived_ = true;
-
-    std::cout << "1" << std::endl;
 }
 
 }
