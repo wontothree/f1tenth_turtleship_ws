@@ -3,9 +3,9 @@
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  // std::cout << "package svg_mppi_planner started\n";
+  std::cout << "package svg_mppi_planner started\n";
 
-  // rclcpp::spin(std::make_shared<svg_mppi::SVGMPPIPlannerROS>());;
+  rclcpp::spin(std::make_shared<svg_mppi::SVGMPPIPlannerROS>());;
 
   rclcpp::shutdown();
   std::cout << "shutdown" << std::endl;

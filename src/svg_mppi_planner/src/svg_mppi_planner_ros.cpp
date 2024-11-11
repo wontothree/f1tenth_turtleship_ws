@@ -4,17 +4,13 @@ namespace svg_mppi {
 
 SVGMPPIPlannerROS::SVGMPPIPlannerROS() : Node("svg_mppi_planner_node")
 {
-    // svg_mppi_pointer_ = std::make_unique<svg_mppi::planning::SVGMPPI>();
+    svg_mppi_pointer_ = std::make_unique<svg_mppi::planning::SVGMPPI>();
 
-    // cost_map_subscriber_ = this->create_subscription<grid_map_msgs::msg::GridMap>(
-    //     "costmap_topic",
-    //     10, 
-    //     std::bind(&SVGMPPIPlannerROS::local_cost_map_callback, this, std::placeholders::_1)
-    // );
-
-    std::cout << "1" << std::endl;
-    RCLCPP_INFO(this->get_logger(), "1");
-
+    cost_map_subscriber_ = this->create_subscription<grid_map_msgs::msg::GridMap>(
+        "costmap_topic",
+        10, 
+        std::bind(&SVGMPPIPlannerROS::local_cost_map_callback, this, std::placeholders::_1)
+    );
 }
 
 void SVGMPPIPlannerROS::timer_callback()
@@ -34,6 +30,8 @@ void SVGMPPIPlannerROS::local_cost_map_callback(
 
     // flag for if received local cost map
     isLocalCostMapReceived_ = true;
+
+    std::cout << "1" << std::endl;
 }
 
 }
