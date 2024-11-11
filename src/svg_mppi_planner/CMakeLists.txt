@@ -20,6 +20,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(grid_map_ros REQUIRED)
+find_package(grid_map_msgs REQUIRED)
 find_package(OpenMP REQUIRED)
 
 include_directories(include/)
@@ -33,6 +34,7 @@ add_executable(svg_mppi_planner_node
 ament_target_dependencies(svg_mppi_planner_node
   rclcpp
   grid_map_ros
+  grid_map_msgs
 )
 
 target_include_directories(svg_mppi_planner_node PUBLIC

@@ -76,12 +76,12 @@ void LocalCostmapGenerator::timerCallback()
     // convert pcl to costmap
     const std::vector<grid_map::Index> occupiedIndices = pclToCostmap(pcl_, costmap_);
 
-    // publish costmap as grid_map_msgs::msg::GridMap
+    // publish costmap as grid_map_msgs::msg::GridMap for planning
     std::shared_ptr<grid_map_msgs::msg::GridMap> costmapMsg;
     costmapMsg = grid_map::GridMapRosConverter::toMessage(*costmap_);
     costmapPublisher_->publish(*costmapMsg);
 
-    // publish costmap as nav_msgs::msg::OccupancyGrid
+    // publish costmap as nav_msgs::msg::OccupancyGrid for visualization
     nav_msgs::msg::OccupancyGrid occupancyGridMsg;
     grid_map::GridMapRosConverter::toOccupancyGrid(*costmap_, "collision_layer", 0.0, 1.0, occupancyGridMsg);
     occupancyGridMsg.header.stamp = this->get_clock()->now();
