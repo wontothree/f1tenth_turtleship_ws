@@ -38,6 +38,10 @@ private:
     const double svgd_step_size_ = 0.005;
 
     // for random_sampling
+    std::vector<std::mt19937> random_number_generators_;
+    std::unique_ptr<std::vector<std::array<std::normal_distribution<>, CONTROL_SPACE::dim>>> normal_distribution_pointer_;
+    const std::array<double, CONTROL_SPACE::dim> max_control_ = {max_steering_};
+    const std::array<double, CONTROL_SPACE::dim> min_control_ = {min_steering_};
     ControlSequence control_mean_sequence_;
     ControlCovarianceSequence control_covariance_sequence_;
     ControlSequenceBatch noise_sequence_batch_;
@@ -48,11 +52,6 @@ private:
     ControlCovarianceSequence control_inverse_covariance_sequence_;
     ControlSequence previous_control_mean_sequence_;
 
-    // generate random noise
-    std::vector<std::mt19937> random_number_generators_;
-    std::unique_ptr<std::vector<std::array<std::normal_distribution<>, CONTROL_SPACE::dim>>> normal_distribution_pointer_;
-    const std::array<double, CONTROL_SPACE::dim> max_control_ = {max_steering_};
-    const std::array<double, CONTROL_SPACE::dim> min_control_ = {min_steering_};
 
     // local cost map
     grid_map::GridMap local_cost_map_;
@@ -271,7 +270,6 @@ private:
         // small value to add diagonal elements for preventing singular matrix
         const double epsilon_ = 1e-4;
 
-
         // calculate inverse of covariance matrices in advance to reduce computational cost
         for (size_t i = 0; i < prediction_step_size_ - 1; i++) {
             control_inverse_covariance_sequence_[i] = control_covariance_sequence_[i].inverse() + epsilon_ * Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim);
@@ -306,14 +304,84 @@ private:
         // ------------------------------------------------------------------------------------------------------------------------
 
         // function approximate_gradient_log_posterior_batch
-        State state_tmp_;
-        state_tmp_ << 0.0, 0.0, 0.0, 1.0, 0.1;
-        std::cout << "state_tmp_" << std::endl;
-        std::cout << state_tmp_ << std::endl;
+        // State state_tmp_;
+        // state_tmp_ << 0.0, 0.0, 0.0, 1.0, 0.1;
+        // std::cout << "state_tmp_" << std::endl;
+        // std::cout << state_tmp_ << std::endl;
 
-        auto a = approximate_gradient_log_posterior_batch(state_tmp_);
+        // auto a = approximate_gradient_log_posterior_batch(state_tmp_);
 
         // std::cout << a << std::endl;
+
+        // ------------------------------------------------------------------------------------------------------------------------
+
+        // test function random_sampling
+
+        ControlSequence control_mean_sequence_tmp_ = Eigen::MatrixXd::Zero(
+            prediction_horizon_ - 1, CONTROL_SPACE::dim
+        );
+        control_mean_sequence_tmp_ << 0.1, 0.2, 0.3;
+        std::cout << control_mean_sequence_tmp_ << std::endl;
+
+        ControlCovarianceSequence control_covariance_sequence_tmp_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+            prediction_horizon_ - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
+        );
+        control_covariance_sequence_tmp_[0] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.1;
+        control_covariance_sequence_tmp_[1] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.2;
+        control_covariance_sequence_tmp_[2] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.3;
+        std::cout << control_covariance_sequence_tmp_[0] << std::endl;
+        std::cout << control_covariance_sequence_tmp_[1] << std::endl;
+        std::cout << control_covariance_sequence_tmp_[2] << std::endl;
+
+        // // print member variable normal_distribution_pointer_
+        // std::cout << "normal_distribution_pointer_:\n";
+        // for (size_t i = 0; i < normal_distribution_pointer_->size(); ++i) {
+        //     for (size_t j = 0; j < CONTROL_SPACE::dim; ++j) {
+        //         std::cout 
+        //             << (*normal_distribution_pointer_)[i][j].mean()
+        //             << " "
+        //             << (*normal_distribution_pointer_)[i][j].stddev()
+        //             << std::endl;
+        //     }
+        // }
+
+        // // print noise_sample_trajectory_batch_
+        // std::cout << "noise_sample_trajectory_batch_:\n";
+        // for (size_t i = 0; i < noise_sample_trajectory_batch_.size(); ++i) {
+        //     std::cout << noise_sample_trajectory_batch_[i] << "\n";
+        // }
+
+        // // print noised_control_mean_sample_trajectory_batch_
+        // std::cout << "noise_sample_trajectory_batch_:\n";
+        // for (size_t i = 0; i < noised_control_mean_sample_trajectory_batch_.size(); ++i) {
+        //     std::cout << noised_control_mean_sample_trajectory_batch_[i] << "\n";
+        // }
+
+        // random_sampling(control_mean_trajectory_tmp_, control_covariance_trajectory_tmp_);
+
+        // // print member variable normal_distribution_pointer_
+        // std::cout << "normal_distribution_pointer_:\n";
+        // for (size_t i = 0; i < normal_distribution_pointer_->size(); ++i) {
+        //     for (size_t j = 0; j < CONTROL_SPACE::dim; ++j) {
+        //         std::cout 
+        //             << (*normal_distribution_pointer_)[i][j].mean()
+        //             << " "
+        //             << (*normal_distribution_pointer_)[i][j].stddev()
+        //             << std::endl;
+        //     }
+        // }
+
+        // // print noise_sample_trajectory_batch_
+        // std::cout << "noise_sample_trajectory_batch_:\n";
+        // for (size_t i = 0; i < noise_sample_trajectory_batch_.size(); ++i) {
+        //     std::cout << noise_sample_trajectory_batch_[i] << "\n";
+        // }
+
+        // // print noised_control_mean_sample_trajectory_batch_
+        // std::cout << "noise_sample_trajectory_batch_:\n";
+        // for (size_t i = 0; i < noised_control_mean_sample_trajectory_batch_.size(); ++i) {
+        //     std::cout << noised_control_mean_sample_trajectory_batch_[i] << "\n";
+        // }
     }
 };
 

@@ -193,19 +193,16 @@ ControlSequenceBatch SVGMPPI::approximate_gradient_log_posterior_batch(
     ControlSequenceBatch gradient_log_posterior_batch_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
         sample_number_, Eigen::MatrixXd::Zero(prediction_step_size_, STATE_SPACE::dim)
     );
+    for (size_t i = 0; i < sample_number_; i++) {
+        const ControlSequence gradient_log_likelihood_ = approximate_gradient_log_likelihood(
+            initial_state,
+            control_mean_sequence_,
+            noised_control_sequence_batch_[i],
+            control_inverse_covariance_sequence_
+        );
 
-    const ControlSequence _control_mean_sequence_ = control_mean_sequence_;
-
-    // for (size_t i = 0; i < sample_number_; i++) {
-    //     const ControlSequence gradient_log_likelihood_ = approximate_gradient_log_likelihood(
-    //         initial_state,
-    //         _control_mean_sequence_,
-    //         noised_control_sequence_batch_[i],
-    //         control_inverse_covariance_sequence_
-    //     );
-
-    //     gradient_log_posterior_batch_[i] = gradient_log_likelihood_;
-    // }
+        gradient_log_posterior_batch_[i] = gradient_log_likelihood_;
+    }
 
     return gradient_log_posterior_batch_;
 }
@@ -216,17 +213,17 @@ ControlSequence SVGMPPI::approximate_gradient_log_likelihood(
     const ControlCovarianceSequence& control_inverse_covariance_sequence
 )
 {
-    ControlCovarianceSequence gradient_covariance_sequence_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+    ControlCovarianceSequence control_covariance_sequence = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
         prediction_horizon_ - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
     );
-    for (auto& gradient_covariance : gradient_covariance_sequence_) {
+    for (auto& control_covariance : control_covariance_sequence) {
         for (size_t i = 0; i < CONTROL_SPACE::dim; i++) {
-            gradient_covariance(i, i) = steering_control_covariance_for_gradient_estimation_[i];
+            control_covariance(i, i) = steering_control_covariance_for_gradient_estimation_[i];
         }
     }
 
     // Generate gaussian random samples, center of which is input_seq
-    random_sampling(noised_control_mean_sequence, gradient_covariance_sequence_);
+    random_sampling(noised_control_mean_sequence, control_covariance_sequence);
 
     // calculate forward simulation and costs
     auto cost_batch_ = calculate_state_cost_batch(
@@ -279,8 +276,12 @@ void SVGMPPI::random_sampling(
     // Set normal distributions parameters
     for (size_t i = 0; i < prediction_horizon_ - 1; i++) {
         for (size_t j = 0; j < CONTROL_SPACE::dim; j++) {
+            // standard deviation of control covariance sequence
             const double standard_deviation_ = std::sqrt(control_covariance_sequence_[i](j, j));
+
+            // normal distribution parameter
             std::normal_distribution<>::param_type param(0.0, standard_deviation_);
+            (*normal_distribution_pointer_)[i][j].param(param);
         }
     }
 

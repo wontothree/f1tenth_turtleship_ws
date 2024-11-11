@@ -31,11 +31,13 @@ git clone https://github.com/wontothree/f1tenth_turtleship_ws.git
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y
 
+sudo apt-get update
+rosdep update —rosdistro=foxy
+
 sudo apt-get install ros-foxy-laser-proc
 sudo apt-get install ros-foxy-cv-bridge
 sudo apt-get install ros-foxy-filters
 sudo apt-get install ros-foxy-serial-driver
-sudo apt-get install ros-foxy-pcl-conversions
 sudo apt-get install ros-foxy-pcl-conversions
 sudo apt-get install ros-foxy-pcl-ros
 ```
