@@ -36,6 +36,7 @@ private:
     const size_t guide_sample_number_ = 1;
     const size_t svgd_iteration_number_ = 3;
     const double svgd_step_size_ = 0.005;
+    const size_t sample_number_for_gradient_estimation_ = 100;
 
     // for random_sampling
     std::vector<std::mt19937> random_number_generators_;
@@ -103,14 +104,11 @@ private:
         const ControlCovarianceSequence control_covariance_sequence
     );
 
-    // --------------------------------------------------------------------------------------------------------------------------------
-    // to do 이진우
-
     /**
      * @brief 모든 샘플에 대한 각각의 state cost를 계산한다.
      * @param initial_state
      * @param local_cost_map
-     * @param state_sequence_batch
+     * @param state_sequence_batch 상태를 저장할 멤버변수를 입력한다.
      */
     std::pair<std::vector<double>, std::vector<double>> calculate_state_cost_batch(
         const State& initial_state,
@@ -142,8 +140,6 @@ private:
         const StateSequence state_sequence,
         const grid_map::GridMap& local_cost_map
     ) const;
-
-    // --------------------------------------------------------------------------------------------------------------------------------
 
     /**
      * @brief
@@ -391,6 +387,7 @@ private:
 
         // ------------------------------------------------------------------------------------------------------------------------
 
+        // approximate_gradient_log_likelihood
 
     }
 };
