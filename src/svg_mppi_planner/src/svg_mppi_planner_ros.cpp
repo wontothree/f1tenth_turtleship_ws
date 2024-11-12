@@ -6,7 +6,7 @@ SVGMPPIPlannerROS::SVGMPPIPlannerROS() : Node("svg_mppi_planner_node")
 {
     svg_mppi_pointer_ = std::make_unique<svg_mppi::planning::SVGMPPI>();
 
-    // initialisze local cost map
+    // initialize local cost map
     local_cost_map_ = new grid_map::GridMap({"collision_layer"});
     local_cost_map_->setGeometry(grid_map::Length(gridLength, gridLength), resolution, grid_map::Position(0.0, 0.0));
     local_cost_map_->get("collision_layer").setConstant(0.0);
@@ -15,6 +15,11 @@ SVGMPPIPlannerROS::SVGMPPIPlannerROS() : Node("svg_mppi_planner_node")
         "cost_map",
         10, 
         std::bind(&SVGMPPIPlannerROS::local_cost_map_callback, this, std::placeholders::_1)
+    );
+
+    marker_array_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
+        "candidate_paths",
+        10
     );
 }
 
@@ -106,7 +111,7 @@ void SVGMPPIPlannerROS::visualize_state_sequence_batch(
         marker_array.markers.push_back(nodes);
     }
 
-    marker_array_ = marker_array;
+    marker_array_publisher_->publish(marker_array);
 
 }
 

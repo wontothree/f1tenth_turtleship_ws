@@ -31,7 +31,7 @@ private:
     rclcpp::Subscription<grid_map_msgs::msg::GridMap>::SharedPtr cost_map_subscriber_;
     
     // publish
-    visualization_msgs::msg::MarkerArray marker_array_;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_publisher_;
     
     /**
     * @brief This function is called in constant period of timer
