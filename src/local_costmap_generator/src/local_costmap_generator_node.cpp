@@ -6,7 +6,9 @@ int main(int argc, char ** argv)
   std::cout << "Package local_costmap_generator started\n" << std::endl;
 
   rclcpp::spin(std::make_shared<LocalCostmapGenerator>());
+
   rclcpp::shutdown();
+  std::cout << "Shutdown" << std::endl;
 
   return 0;
 }

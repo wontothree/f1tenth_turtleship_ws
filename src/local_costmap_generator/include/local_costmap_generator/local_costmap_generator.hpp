@@ -19,16 +19,11 @@
 class LocalCostmapGenerator : public rclcpp::Node 
 {
 private:
-    //// constants: 이곳의 상수들을 수정하여 grid map의 크기, 해상도, 업데이트 주기, 
-    //// robot frame(base frame) 이름, sensor frame(laser frame) 이름을 조정할 수 있다.
+    const double gridLength = 20.0;                     // one side length of sqaure cost map (m)
+    const double resolution = 0.07;                     // resolution of cost map (m/grid)
+    const int gridSize = gridLength / resolution;       // number of index in cost map 
 
-    // grid map 의 인덱스 개수. 이는 n x n 2D grid map에서 n을 의미한다.
-    const int gridSize = 40;
-    const double gridLength = 6.0; // grid map의 길이 (meter)
-    const double resolution = gridLength / gridSize; // grid map의 해상도 (meter)
-
-    // grid map을 업데이트하는 주기(ms)
-    const int timerPeriod = 1000; 
+    const int timerPeriod = 10;                       // period of updating cost map (ms)
 
     // frame id
     const std::string robotFrameId_ = "ego_racecar/base_link";

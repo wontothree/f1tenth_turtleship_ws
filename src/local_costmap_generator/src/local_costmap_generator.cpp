@@ -110,21 +110,33 @@ std::vector<grid_map::Index> LocalCostmapGenerator::pclToCostmap(
     // transform pcl to costmap
     std::vector<grid_map::Index> occupiedIndices(pcl->points.size(), grid_map::Index(0, 0));
 
-    costmap->get("collision_layer").setConstant(0.0); // costmap 초기화
+    // initialize cost map
+    costmap->get("collision_layer").setConstant(0.0);
     for (unsigned int index = 0; index < pcl->points.size(); index++) {
         const auto& point = pcl->points[index];
 
-        const double len = gridLength / 2; // grid map의 길이(m)의 절반
+        // const double len = gridLength / 2; // grid map의 길이(m)의 절반
+        const double map_x_helf_length = gridLength / 2;
+        const double map_y_half_length = gridLength / 2;
 
-        if (point.x >= -len && point.x <= len && point.y >= -len && point.y <= len) {
-            int grid_x = static_cast<int>((point.x + len) / resolution); // x 좌표를 그리드 인덱스로 변환
-            int grid_y = static_cast<int>((point.y + len) / resolution); // y 좌표를 그리드 인덱스로 변환
+        if (point.x >= -map_x_helf_length
+            && point.x <= map_x_helf_length
+            && point.y >= -map_y_half_length
+            && point.y <= map_y_half_length
+        ) {
+            // Convert point to grid map coordinates
+            int grid_x = static_cast<int>((-point.x + map_x_helf_length) / resolution);
+            int grid_y = static_cast<int>((-point.y + map_y_half_length) / resolution);
 
             // 그리드 인덱스가 범위를 벗어나지 않도록 체크
-            if (grid_x >= 0 && grid_x < gridSize && grid_y >= 0 && grid_y < gridSize) {
-                occupiedIndices[index] = grid_map::Index(grid_x, grid_y);
+            if (grid_x >= 0 
+                && grid_x < gridSize 
+                && grid_y >= 0 
+                && grid_y < gridSize
+            ) {
+                // occupiedIndices[index] = grid_map::Index(grid_x, grid_y);
                 // update costmap
-                costmap->atPosition("collision_layer", grid_map::Position(point.x, point.y)) = 1.0;
+                costmap->at("collision_layer", grid_map::Index(grid_x, grid_y)) = 1.0;
             } else {
                 occupiedIndices[index] = grid_map::Index(-1, -1); // 범위를 벗어난 인덱스
             }
@@ -133,7 +145,7 @@ std::vector<grid_map::Index> LocalCostmapGenerator::pclToCostmap(
         }
     }
 
-    // // 디버깅용 출력: 행렬 시각화. costmap의 데이터를 출력한다. 보고싶으면 아래 주석처리를 제거하면 된다.
+    // // 디버깅용 출력: 행렬 시각화.
     // Eigen::MatrixXf& costmapData = costmap->get("collision_layer"); // costmap의 데이터를 가져온다.
     // std::cout << "----------------------------------" << std::endl;
     // std::cout << costmapData << std::endl; // 디버깅용 출력: costmap 시각화
