@@ -21,13 +21,18 @@ public:
 private:
     const double gridLength = 20.0;                     // one side length of square cost map (m)
     const double resolution = 0.07;                     // resolution of cost map (m / grid)
+    const std::string robot_frame_id_ = "base_link";    // frame id of robot
+    const std::string map_frame_id_ = "map";            // frame id of map
 
 private:
     std::unique_ptr<svg_mppi::planning::SVGMPPI> svg_mppi_pointer_;
 
     // subscribe
     rclcpp::Subscription<grid_map_msgs::msg::GridMap>::SharedPtr cost_map_subscriber_;
-
+    
+    // publish
+    visualization_msgs::msg::MarkerArray marker_array_;
+    
     /**
     * @brief This function is called in constant period of timer
     */
@@ -47,11 +52,12 @@ private:
     // (이진우)working...
     /**
      * @brief make topic msg to visualize state sequence batch on rviz
+     * @param state_sequence_batch state sequence batch to visualize
+     * @param weight_batch 
      */
     void visualize_state_sequence_batch(
-        // state_sequence_batch
-        // weight_batch
-        // publisher
-    )
-};
-}
+        const planning::StateSequenceBatch& state_sequence_batch,
+        const std::vector<double>& weight_batch
+    );
+}; // class SVGMPPIPlannerROS
+} // namespace svg_mppi
