@@ -60,5 +60,20 @@ private:
         const planning::StateSequenceBatch& state_sequence_batch,
         const std::vector<double>& weight_batch
     );
-}; // class SVGMPPIPlannerROS
-} // namespace svg_mppi
+
+    /**
+     * @brief 이진우 ref publish_traj
+     */
+    void visualize_state_sequence(
+        // state_sequence
+    );
+
+    /**
+     * @brief 이진우 ref publish_path
+     */
+    void visualize_path(
+        // state_sequence
+    );
+};
+}
+
