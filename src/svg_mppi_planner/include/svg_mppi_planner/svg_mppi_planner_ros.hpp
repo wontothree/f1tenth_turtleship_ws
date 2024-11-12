@@ -27,7 +27,7 @@ private:
     void timer_callback();
 
     bool isLocalCostMapReceived_;
-    grid_map::GridMap local_cost_map_;  
+    grid_map::GridMap* local_cost_map_;  
     void local_cost_map_callback(
         const grid_map_msgs::msg::GridMap::SharedPtr local_cost_map
     );

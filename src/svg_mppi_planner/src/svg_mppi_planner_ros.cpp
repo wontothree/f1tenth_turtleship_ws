@@ -23,13 +23,18 @@ void SVGMPPIPlannerROS::local_cost_map_callback(
 )
 {
     // Convert grid_map_msgs::msg::GridMap 2 grid_map::GridMap
-    if (!grid_map::GridMapRosConverter::fromMessage(*local_cost_map, local_cost_map_)) {
+    if (!grid_map::GridMapRosConverter::fromMessage(*local_cost_map, *local_cost_map_)) {
         RCLCPP_ERROR(this->get_logger(), "[MPPIPlannerROS] Failed to convert grid_map_msgs::msg::GridMap to grid_map::GridMap");
         return;
     }
 
     // flag for if received local cost map
     isLocalCostMapReceived_ = true;
+
+    Eigen::MatrixXf& costmapData = local_cost_map_->get("collision_layer");
+    std::cout << "----------------------------------" << std::endl;
+    std::cout << costmapData << std::endl;
+    std::cout << "----------------------------------" << std::endl;
 }
 
 }
