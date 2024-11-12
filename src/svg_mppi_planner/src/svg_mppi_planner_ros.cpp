@@ -6,8 +6,13 @@ SVGMPPIPlannerROS::SVGMPPIPlannerROS() : Node("svg_mppi_planner_node")
 {
     svg_mppi_pointer_ = std::make_unique<svg_mppi::planning::SVGMPPI>();
 
+    // initialisze local cost map
+    local_cost_map_ = new grid_map::GridMap({"collision_layer"});
+    local_cost_map_->setGeometry(grid_map::Length(gridLength, gridLength), resolution, grid_map::Position(0.0, 0.0));
+    local_cost_map_->get("collision_layer").setConstant(0.0);
+
     cost_map_subscriber_ = this->create_subscription<grid_map_msgs::msg::GridMap>(
-        "costmap_topic",
+        "cost_map",
         10, 
         std::bind(&SVGMPPIPlannerROS::local_cost_map_callback, this, std::placeholders::_1)
     );

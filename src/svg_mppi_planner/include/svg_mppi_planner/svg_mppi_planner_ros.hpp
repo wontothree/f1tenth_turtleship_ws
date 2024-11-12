@@ -13,6 +13,9 @@ namespace svg_mppi {
 class SVGMPPIPlannerROS : public rclcpp::Node
 {
 private:
+    const double gridLength = 20.0;                     // one side length of sqaure cost map (m)
+    const double resolution = 0.07;                     // resolution of cost map (m/grid)
+
     std::unique_ptr<svg_mppi::planning::SVGMPPI> svg_mppi_pointer_;
 
     // subscribe
