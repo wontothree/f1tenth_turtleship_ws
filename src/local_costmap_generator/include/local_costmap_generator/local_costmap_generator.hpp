@@ -24,9 +24,7 @@ private:
 
     // grid map 의 인덱스 개수. 이는 n x n 2D grid map에서 n을 의미한다.
     const int gridSize = 40;
-
     const double gridLength = 6.0; // grid map의 길이 (meter)
-
     const double resolution = gridLength / gridSize; // grid map의 해상도 (meter)
 
     // grid map을 업데이트하는 주기(ms)
@@ -45,7 +43,7 @@ private:
     rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr costmapPublisher_;
 
     // publisher for occupancy grid
-    rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr costmapPublisher2_;
+    rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr occupancyGridPublisher_;
 
     // flag for if received scan
     bool isScanReceived_;
@@ -70,14 +68,43 @@ private:
     // grid map object
     grid_map::GridMap* costmap_;
 
+    /**
+     * @brief scan 토픽이 발행되었을 때 호출되는 콜백함수. 
+        scan 토픽 정보를 받아 pointcloud2로 변환하고, 이를 pcl로 변환한다.
+    * 
+    * @param scan : scan 
+    */
     void scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan);
 
-    void sensorFrameToRobotFrame(pcl::PointCloud<pcl::PointXYZ>::Ptr& pcl);
-
+    /**
+     * @brief 특정 주기마다 호출되어 grid map을 업데이트하고, costmap 토픽을 발행한다.
+        costmap은 두가지 타입으로 발행한다. 하나는 grid_map_msgs::msg::GridMap, 다른 하나는 nav_msgs::msg::OccupancyGrid이다.
+    * 
+    */
     void timerCallback();
 
+    /**
+     * @brief pcl을 받아, 그 좌표의 기준을 laser frame에서 base frame으로 변환한다. 
+        따라서 이것은 반드시 '/tf_static'이 laser frame과 base frame 사이의 변환을 포함해야 동작한다.
+    * @param pcl pcl::PointXYZ 타입의 포인터
+    */
+    void sensorFrameToRobotFrame(pcl::PointCloud<pcl::PointXYZ>::Ptr& pcl);
+
+    /**
+     * @brief pcl을 받아, 그 좌표를 costmap의 좌표로 변환한다.
+     * @param pcl pcl::PointXYZ 타입의 포인터
+     * @param costmap grid_map::GridMap 타입의 포인터
+     * @return std::vector<grid_map::Index> 변환된 좌표의 인덱스
+     */
     std::vector<grid_map::Index> pclToCostmap(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pcl, grid_map::GridMap* costmap) const;
 
 public:
+    /**
+     * @brief 
+        이 노드는 scan 토픽을 구독하고, costmap 토픽을 발행한다.
+        costmap은 두가지 타입으로 발행한다. 하나는 grid_map_msgs::msg::GridMap, 다른 하나는 nav_msgs::msg::OccupancyGrid이다.
+        grid_map_msgs::msg::GridMap은 grid_map_msgs 패키지에서 제공하는 메시지 타입이다. 이는 grid map을 표현하는 메시지이다. 
+    * 
+    */
     LocalCostmapGenerator();
 };

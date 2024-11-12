@@ -1,13 +1,5 @@
 #include "local_costmap_generator/local_costmap_generator.hpp"
 
-
-/**
- * @brief LocalCostmapGenerator의 생성자. 
-    이 노드는 scan 토픽을 구독하고, costmap 토픽을 발행한다.
-    costmap은 두가지 타입으로 발행한다. 하나는 grid_map_msgs::msg::GridMap, 다른 하나는 nav_msgs::msg::OccupancyGrid이다.
-    grid_map_msgs::msg::GridMap은 grid_map_msgs 패키지에서 제공하는 메시지 타입이다. 이는 grid map을 표현하는 메시지이다. 
- * 
- */
 LocalCostmapGenerator::LocalCostmapGenerator() : Node("local_costmap_generator_node"), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_)
 {
     // subscriber for laser scan
@@ -17,10 +9,10 @@ LocalCostmapGenerator::LocalCostmapGenerator() : Node("local_costmap_generator_n
 
     // publisher for costmap
     costmapPublisher_ = this->create_publisher<grid_map_msgs::msg::GridMap>(
-        "costmap_topic", 10
+        "cost_map", 10
     );
-    costmapPublisher2_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>(
-        "costmap_topic_oc", 10
+    occupancyGridPublisher_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>(
+        "occupancy_grid_map", 10
     );
     
     // flag for if received scan
@@ -44,12 +36,6 @@ LocalCostmapGenerator::LocalCostmapGenerator() : Node("local_costmap_generator_n
     costmap_->get("collision_layer").setConstant(0.0);
 }
 
-/**
- * @brief scan 토픽이 발행되었을 때 호출되는 콜백함수. 
-    scan 토픽 정보를 받아 pointcloud2로 변환하고, 이를 pcl로 변환한다.
- * 
- * @param scan : scan 
- */
 void LocalCostmapGenerator::scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan)
 {
     // scan 데이터를 pointcloud2로 변환한다.
@@ -62,11 +48,6 @@ void LocalCostmapGenerator::scanCallback(const sensor_msgs::msg::LaserScan::Shar
     isScanReceived_ = true;
 }
 
-/**
- * @brief 특정 주기마다 호출되어 grid map을 업데이트하고, costmap 토픽을 발행한다.
-    costmap은 두가지 타입으로 발행한다. 하나는 grid_map_msgs::msg::GridMap, 다른 하나는 nav_msgs::msg::OccupancyGrid이다.
- * 
- */
 void LocalCostmapGenerator::timerCallback()
 {
     if (!isScanReceived_) {
@@ -90,13 +71,9 @@ void LocalCostmapGenerator::timerCallback()
     grid_map::GridMapRosConverter::toOccupancyGrid(*costmap_, "collision_layer", 0.0, 1.0, occupancyGridMsg);
     occupancyGridMsg.header.stamp = this->get_clock()->now();
     occupancyGridMsg.header.frame_id = robotFrameId_;
-    costmapPublisher2_->publish(occupancyGridMsg);
+    occupancyGridPublisher_->publish(occupancyGridMsg);
 }
-/**
- * @brief pcl을 받아, 그 좌표의 기준을 laser frame에서 base frame으로 변환한다. 
-    따라서 이것은 반드시 '/tf_static'이 laser frame과 base frame 사이의 변환을 포함해야 동작한다.
- * @param pcl pcl::PointXYZ 타입의 포인터
- */
+
 void LocalCostmapGenerator::sensorFrameToRobotFrame(pcl::PointCloud<pcl::PointXYZ>::Ptr& pcl)
 {   
 
@@ -125,12 +102,6 @@ void LocalCostmapGenerator::sensorFrameToRobotFrame(pcl::PointCloud<pcl::PointXY
     pcl::transformPointCloud(*pcl, *pcl, transformMatrix.matrix().cast<float>());
 }
 
-/**
- * @brief pcl을 받아, 그 좌표를 costmap의 좌표로 변환한다.
- * @param pcl pcl::PointXYZ 타입의 포인터
- * @param costmap grid_map::GridMap 타입의 포인터
- * @return std::vector<grid_map::Index> 변환된 좌표의 인덱스
- */
 std::vector<grid_map::Index> LocalCostmapGenerator::pclToCostmap(
     const pcl::PointCloud<pcl::PointXYZ>::ConstPtr pcl, 
     grid_map::GridMap* costmap

@@ -1,5 +1,13 @@
 # [Package] local_costmap_generator
 
+    local_costmap_generator
+    ├── include
+    |   └── mppi_planner
+    |      ├── local_costmap_generator.hpp        # 
+    └── src/
+        ├── local_costmap_generator_node.cpp      # 
+        └── local_costmap_generator.cpp           #
+
 # Subscribed Topics
 
 `/scan` [sensor_msgs/msg/LserScan](https://docs.ros2.org/latest/api/sensor_msgs/msg/LaserScan.html)
@@ -26,8 +34,13 @@ scanSubscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
 # Publisheed Topics
 
 ```cpp
-costmapPublisher_ = this->create_publisher<grid_map_msgs::msg::GridMap>("costmap_topic", 10);
-costmapPublisher2_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("costmap_topic_oc", 10);
+// publisher for costmap
+costmapPublisher_ = this->create_publisher<grid_map_msgs::msg::GridMap>(
+    "cost_map", 10
+);
+occupancyGridPublisher_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>(
+    "occupancy_grid_map", 10
+);
 ```
 
 # Nodes
