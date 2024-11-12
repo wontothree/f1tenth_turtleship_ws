@@ -50,7 +50,6 @@ private:
         const grid_map_msgs::msg::GridMap::SharedPtr local_cost_map
     );
 
-    // (이진우)working...
     /**
      * @brief make topic msg to visualize state sequence batch on rviz
      * @param state_sequence_batch state sequence batch to visualize
@@ -65,7 +64,7 @@ private:
      * @brief 이진우 ref publish_traj
      */
     void visualize_state_sequence(
-        // state_sequence
+        const planning::StateSequence& state_sequence,
     );
 
     /**
