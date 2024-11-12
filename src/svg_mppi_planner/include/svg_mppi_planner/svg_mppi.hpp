@@ -331,9 +331,9 @@ private:
         // control_covariance_sequence_tmp_[0] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.1;
         // control_covariance_sequence_tmp_[1] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.2;
         // control_covariance_sequence_tmp_[2] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.3;
-        // // std::cout << control_covariance_sequence_tmp_[0] << std::endl;
-        // // std::cout << control_covariance_sequence_tmp_[1] << std::endl;
-        // // std::cout << control_covariance_sequence_tmp_[2] << std::endl;
+        // std::cout << control_covariance_sequence_tmp_[0] << std::endl;
+        // std::cout << control_covariance_sequence_tmp_[1] << std::endl;
+        // std::cout << control_covariance_sequence_tmp_[2] << std::endl;
 
         // // print member variable normal_distribution_pointer_
         // std::cout << "normal_distribution_pointer_\n";
