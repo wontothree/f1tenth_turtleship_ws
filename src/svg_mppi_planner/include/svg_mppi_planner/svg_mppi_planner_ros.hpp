@@ -21,8 +21,9 @@ public:
 private:
     const double gridLength = 20.0;                     // one side length of square cost map (m)
     const double resolution = 0.07;                     // resolution of cost map (m / grid)
-    const std::string robot_frame_id_ = "base_link";    // frame id of robot
+    const std::string robot_frame_id_ = "ego_racecar/base_link";    // frame id of robot
     const std::string map_frame_id_ = "map";            // frame id of map
+    const int timer_period = 1000;                      // timer period (ms)
 
 private:
     std::unique_ptr<svg_mppi::planning::SVGMPPI> svg_mppi_pointer_;

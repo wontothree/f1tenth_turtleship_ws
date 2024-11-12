@@ -21,11 +21,27 @@ SVGMPPIPlannerROS::SVGMPPIPlannerROS() : Node("svg_mppi_planner_node")
         "candidate_paths",
         10
     );
+
+    // timer_callback함수를 timerPeriod(ms)마다 호출한다.
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(timer_period), std::bind(&SVGMPPIPlannerROS::timer_callback, this));
 }
 
 void SVGMPPIPlannerROS::timer_callback()
 {
-    //
+    // // test code for visualize_state_sequence_batch function
+    // // please remove this code after implementing the function
+    // planning::StateSequenceBatch state_sequence_batch = {
+    //     Eigen::MatrixXd::Random(10, 5),
+    //     Eigen::MatrixXd::Random(10, 5),
+    //     Eigen::MatrixXd::Random(10, 5)
+    // };
+
+    // std::vector<double> weight_batch = {1.0, 2.0, 3.0};
+
+    // visualize_state_sequence_batch(
+    //     state_sequence_batch,
+    //     weight_batch
+    // );
 }
 
 void SVGMPPIPlannerROS::local_cost_map_callback(
