@@ -81,18 +81,13 @@ void SVGMPPIPlannerROS::timer_callback()
         initial_state, svg_mppi_pointer_->noised_control_sequence_batch_[2]
     );
 
-    // std::cout << predicted_state_sequence << std::endl;
-
-    std::vector<double> weight_batch = {
-        1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
-    };
-
-    visualize_state_sequence_batch(
-        svg_mppi_pointer_->noised_control_sequence_batch_,
-        weight_batch
+    visualize_state_sequence(
+        predicted_state_sequence,
+        "state_sequence",
+        "r"
     );
 
-    std::cout << "noised_control_sequence_batch_:\n";
+    // std::cout << "noised_control_sequence_batch_:\n";
     // for (size_t i = 0; i < svg_mppi_pointer_->noised_control_sequence_batch_.size(); ++i) {
     //     std::cout << svg_mppi_pointer_->noised_control_sequence_batch_[i] << "\n";
     // }

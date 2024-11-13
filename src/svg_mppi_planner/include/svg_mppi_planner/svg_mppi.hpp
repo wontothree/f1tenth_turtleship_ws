@@ -435,21 +435,21 @@ public:
 
         // test function predict_state_sequence
 
-        State state_tmp;
-        state_tmp << 0.0, 0.0, 0.0, 1.0, 0.0;
-        std::cout << "state_tmp" << std::endl;
-        std::cout << state_tmp << std::endl;
+        // State state_tmp;
+        // state_tmp << 0.0, 0.0, 0.0, 1.0, 0.0;
+        // std::cout << "state_tmp" << std::endl;
+        // std::cout << state_tmp << std::endl;
 
-        ControlSequence control_sequence_tmp = Eigen::MatrixXd::Zero(
-            PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
-        );
-        control_sequence_tmp << 0.586023, -2.0311, 0.250938, 0.895655, -1.02602, 0.679724, 1.66303, 0.397099, 0.377119;
-        std::cout << "control_sequence_tmp" << std::endl;
-        std::cout << control_sequence_tmp << std::endl;
+        // ControlSequence control_sequence_tmp = Eigen::MatrixXd::Zero(
+        //     PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
+        // );
+        // control_sequence_tmp << 0.586023, -2.0311, 0.250938, 0.895655, -1.02602, 0.679724, 1.66303, 0.397099, 0.377119;
+        // std::cout << "control_sequence_tmp" << std::endl;
+        // std::cout << control_sequence_tmp << std::endl;
 
-        StateSequence predicted_state_sequence = predict_state_sequence(state_tmp, control_sequence_tmp);
+        // StateSequence predicted_state_sequence = predict_state_sequence(state_tmp, control_sequence_tmp);
 
-        std::cout << predicted_state_sequence << std::endl;
+        // std::cout << predicted_state_sequence << std::endl;
 
         // ----------------------------------------------------------------------------------------------------
 
