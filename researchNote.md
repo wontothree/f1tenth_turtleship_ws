@@ -904,3 +904,7 @@ Implementation
 ```
 
 - calculate_sample_weights
+
+*11/13/2024*
+
+random_sampling 함수 test

@@ -200,6 +200,201 @@ std::pair<ControlSequence, double> SVGMPPI::solve(
     return std::make_pair(control_mean_sequence_, 3.0);
 }
 
+void SVGMPPI::random_sampling(
+    const ControlSequence control_mean_sequence,
+    const ControlCovarianceSequence control_covariance_sequence
+)
+{
+    set_control_mean_sequence(control_mean_sequence);
+    set_control_covariance_sequence(control_covariance_sequence);
+
+    // Set normal distributions parameters and pointer
+    for (size_t i = 0; i < PREDICTION_HORIZON - 1; i++) {
+        for (size_t j = 0; j < CONTROL_SPACE::dim; j++) {
+            // standard deviation of control covariance sequence
+            const double standard_deviation = std::sqrt(control_covariance_sequence_[i](j, j));
+
+            // normal distribution parameter in which expectation is 0 and standard deviation is from control covariance sequence
+            std::normal_distribution<>::param_type normal_distribution_parameter(0.0, standard_deviation);
+
+            // set noraml distribution pointer
+            (*normal_distribution_pointer_)[i][j].param(normal_distribution_parameter);
+        }
+    }
+
+    #pragma omp parallel for num_threads(thread_number_)
+    for (size_t i = 0; i < SAMPLE_NUMBER; i++) {
+        // generate noise sequence using upper normal distribution
+        for (size_t j = 0; j < prediction_horizon_ - 1; j++) {
+            for (size_t k = 0; k < CONTROL_SPACE::dim; k++) {
+                noise_sequence_batch_[i](j, k) = (*normal_distribution_pointer_)[j][k](random_number_generators_[omp_get_thread_num()]);
+            }
+        }
+
+        // sampling control sequence with non-biased (around zero) sampling rate
+        if (i < static_cast<size_t>((1 - NON_BIASED_SAMPLING_RATE) * sample_number_)) {
+            // biased sampling (around control_mean_sequence)
+            noised_control_sequence_batch_[i] = control_mean_sequence_ + noise_sequence_batch_[i];
+        } else {
+            // non-biased sampling (around zero)
+            noised_control_sequence_batch_[i] = noise_sequence_batch_[i];
+        }
+
+        // // clip input with control input constraints
+        // for (size_t j = 0; j < CONTROL_SPACE::dim; j++) {
+        //     for (size_t k = 0; k < prediction_horizon_ - 1; k++) {
+        //         noised_control_sequence_batch_[i](k, j) = std::clamp(
+        //             noised_control_sequence_batch_[i](k, j),
+        //             min_control_[j],
+        //             max_control_[j]
+        //         );
+        //     }
+        // }
+    }
+}
+
+StateSequence SVGMPPI::predict_state_sequence(
+    const State& initial_state,
+    const ControlSequence& control_sequence
+) const
+{
+    // initialize state trajectory
+    StateSequence predicted_state_sequence = Eigen::MatrixXd::Zero(prediction_step_size_, STATE_SPACE::dim);
+
+    // set current state to state trajectory as initial state
+    predicted_state_sequence.row(0) = initial_state;
+
+    for (size_t i = 0; i < prediction_step_size_ - 1; i++) {
+        double steering = control_sequence(i, CONTROL_SPACE::steering);
+
+        const double predicted_x = predicted_state_sequence(i, STATE_SPACE::x);
+        const double predicted_y = predicted_state_sequence(i, STATE_SPACE::y);;
+        const double predicted_yaw = predicted_state_sequence(i, STATE_SPACE::yaw);
+        const double predicted_velocity = predicted_state_sequence(i, STATE_SPACE::velocity);
+        const double predicted_steering = predicted_state_sequence(i, STATE_SPACE::steering);
+
+        // predict delta state using kinematic bicycle model
+        const double sideslip = atan(L_R / (L_F + L_R) * tan(steering));
+        const double predicted_delta_x = predicted_velocity * cos(predicted_yaw + sideslip) * PREDICTION_INTERVAL;
+        const double predicted_delta_y = predicted_velocity * sin(predicted_yaw + sideslip) * PREDICTION_INTERVAL;
+        // const double predicted_delta_yaw = predicted_velocity * sin(sideslip) / L_R * PREDICTION_INTERVAL;
+        const double predicted_delta_yaw = predicted_velocity / (L_F + L_R) * cos(sideslip) * tan(predicted_yaw) * PREDICTION_INTERVAL; // check
+        const double predicted_delta_steering = (steering - predicted_steering) * PREDICTION_INTERVAL; // steer 1st order delay // check
+
+        double next_velocity = 0.0;
+        if (1) {
+            next_velocity = predict_constant_speed(predicted_velocity);
+        }
+
+        // update next state
+        predicted_state_sequence(i + 1, STATE_SPACE::x) = predicted_x + predicted_delta_x;
+        predicted_state_sequence(i + 1, STATE_SPACE::y) = predicted_y + predicted_delta_y;
+        predicted_state_sequence(i + 1, STATE_SPACE::yaw) = std::atan2(sin(predicted_yaw + predicted_delta_yaw), cos(predicted_yaw + predicted_delta_yaw));
+        predicted_state_sequence(i + 1, STATE_SPACE::velocity) = next_velocity;
+        predicted_state_sequence(i + 1, STATE_SPACE::steering) = predicted_steering + predicted_delta_steering;
+    }
+
+    return predicted_state_sequence;
+}
+
+std::pair<double, double> SVGMPPI::calculate_state_sequence_cost(
+    const StateSequence state_sequence,
+    const grid_map::GridMap& local_cost_map
+) const
+{
+    // initialize total cost of summing stage cost and terminal cost
+    double state_squence_cost_sum = 0.0;
+
+    // stage cost
+    for (size_t i = 0; i < PREDICTION_HORIZON - 1; i++) {
+        double state_squence_stage_cost_sum = 10.0;
+
+        State stage_state = state_sequence.row(i);
+        if (local_cost_map.isInside(grid_map::Position(stage_state(STATE_SPACE::x), stage_state(STATE_SPACE::y)))) {
+            state_squence_stage_cost_sum = local_cost_map.atPosition(
+                "collision", grid_map::Position(stage_state(STATE_SPACE::x), stage_state(STATE_SPACE::y))
+            );
+        }
+
+        state_squence_cost_sum += collision_weight_ * state_squence_stage_cost_sum;
+    }
+
+    // terminal cost
+    const State terminal_state_ = state_sequence.row(prediction_step_size_ - 1);
+    double state_sequence_terminal_cost_sum_ = 10.0;
+    if (local_cost_map.isInside(grid_map::Position(terminal_state_(STATE_SPACE::x), terminal_state_(STATE_SPACE::y)))) {
+        state_sequence_terminal_cost_sum_ = local_cost_map.atPosition(
+            "collision", grid_map::Position(terminal_state_(STATE_SPACE::x), terminal_state_(STATE_SPACE::y))
+        );
+    }
+
+    state_squence_cost_sum += collision_weight_ * state_sequence_terminal_cost_sum_;
+
+    return std::make_pair(state_squence_cost_sum, state_squence_cost_sum);
+}
+
+std::pair<std::vector<double>, std::vector<double>> SVGMPPI::calculate_state_cost_batch(
+    const State& initial_state,
+    const grid_map::GridMap& local_cost_map,
+    StateSequenceBatch* state_sequence_batch
+) const
+{
+    std::vector<double> total_cost_batch(sample_number_);
+    std::vector<double> collision_cost_batch(sample_number_);
+
+    #pragma omp parallel for num_threads(thread_number_)
+    for (size_t i = 0; i < sample_number_; i++) {
+        // predict state sequence
+        state_sequence_batch->at(i) = predict_state_sequence(
+            initial_state,
+            noised_control_sequence_batch_[i]
+        );
+
+        // calculate state sequence cost
+        const auto [total_cost, collision_cost] = calculate_state_sequence_cost(
+            state_sequence_batch->at(i),
+            local_cost_map
+        );
+        total_cost_batch.at(i) = total_cost;
+        collision_cost_batch.at(i) = collision_cost;
+    }
+
+    return std::make_pair(total_cost_batch, collision_cost_batch);
+}
+
+std::vector<double> SVGMPPI::calculate_sample_cost_batch(
+    const double& lambda,
+    const double& alpha,
+    const std::vector<double> state_costs,
+    const ControlSequence initial_consrol_sequence,
+    const ControlSequence nominal_control_sequqnce,
+    const ControlSequenceBatch control_sequence,
+    const ControlCovarianceSequence control_inverse_covariance_sequence
+) const
+{
+    // 모든 sample의 cost들
+    std::vector<double> sample_costs = state_costs;
+
+    #pragma omp parallel for num_threads(thread_number_)
+    for (size_t i = 0; i < sample_number_; i++) {
+        for (size_t j = 0; j < prediction_horizon_ - 1; j++) {
+            const double control_cost = \
+                lambda * (1 - alpha) \
+                * (initial_consrol_sequence.row(j) - nominal_control_sequqnce.row(j)) \
+                * control_inverse_covariance_sequence[j] \
+                * control_sequence[i].row(j).transpose();
+            
+            sample_costs[i] += control_cost;
+        }
+    }
+
+    return sample_costs;
+}
+
+
+
+
+
 ControlSequenceBatch SVGMPPI::approximate_gradient_log_posterior_batch(
     const State& initial_state
 )
@@ -221,6 +416,7 @@ ControlSequenceBatch SVGMPPI::approximate_gradient_log_posterior_batch(
 
     return gradient_log_posterior_batch;
 }
+
 ControlSequence SVGMPPI::approximate_gradient_log_likelihood(
     const State& initial_state,
     const ControlSequence& control_mean_sequence,
@@ -280,194 +476,6 @@ ControlSequence SVGMPPI::approximate_gradient_log_likelihood(
     const double weight_sum = std::accumulate(sample_weight_batch.begin(), sample_weight_batch.end(), 0.0);
 
     return grad_sum / (weight_sum + 1e-10);
-}
-
-void SVGMPPI::random_sampling(
-    const ControlSequence control_mean_sequence,
-    const ControlCovarianceSequence control_covariance_sequence
-)
-{
-    set_control_mean_sequence(control_mean_sequence);
-    set_control_covariance_sequence(control_covariance_sequence);
-
-    // Set normal distributions parameters
-    for (size_t i = 0; i < prediction_horizon_ - 1; i++) {
-        for (size_t j = 0; j < CONTROL_SPACE::dim; j++) {
-            // standard deviation of control covariance sequence
-            const double standard_deviation = std::sqrt(control_covariance_sequence_[i](j, j));
-
-            // normal distribution parameter in which expectation is 0 and standard deviation is from control covariance sequence
-            std::normal_distribution<>::param_type normal_distribution_parameter(0.0, standard_deviation);
-
-            // set noraml distribution pointer
-            (*normal_distribution_pointer_)[i][j].param(normal_distribution_parameter);
-        }
-    }
-
-    #pragma omp parallel for num_threads(thread_number_)
-    for (size_t i = 0; i < sample_number_; i++) {
-        // generate noise sequence using upper normal distribution
-        for (size_t j = 0; j < prediction_horizon_ - 1; j++) {
-            for (size_t k = 0; k < CONTROL_SPACE::dim; k++) {
-                noise_sequence_batch_[i](j, k) = (*normal_distribution_pointer_)[j][k](random_number_generators_[omp_get_thread_num()]);
-            }
-        }
-
-        // sampling control trajectory with non-biased (around zero) sampling rate
-        if (i < static_cast<size_t>((1 - non_biased_sampling_rate_) * sample_number_)) {
-            // biased sampling
-            noised_control_sequence_batch_[i] = control_mean_sequence_ + noise_sequence_batch_[i];
-        } else {
-            // non-biased sampling (around zero)
-            noised_control_sequence_batch_[i] = noise_sequence_batch_[i];
-        }
-
-        // clip input with control input constraints
-        for (size_t j = 0; j < CONTROL_SPACE::dim; j++) {
-            for (size_t k = 0; k < prediction_horizon_ - 1; k++) {
-                noised_control_sequence_batch_[i](k, j) = std::clamp(
-                    noised_control_sequence_batch_[i](k, j),
-                    min_control_[j],
-                    max_control_[j]
-                );
-            }
-        }
-    }
-}
-
-std::pair<std::vector<double>, std::vector<double>> SVGMPPI::calculate_state_cost_batch(
-    const State& initial_state,
-    const grid_map::GridMap& local_cost_map,
-    StateSequenceBatch* state_sequence_batch
-) const
-{
-    std::vector<double> total_cost_batch(sample_number_);
-    std::vector<double> collision_cost_batch(sample_number_);
-
-    #pragma omp parallel for num_threads(thread_number_)
-    for (size_t i = 0; i < sample_number_; i++) {
-        // predict state sequence
-        state_sequence_batch->at(i) = predict_state_sequence(
-            initial_state,
-            noised_control_sequence_batch_[i]
-        );
-
-        // calculate state sequence cost
-        const auto [total_cost, collision_cost] = calculate_state_sequence_cost(
-            state_sequence_batch->at(i),
-            local_cost_map
-        );
-        total_cost_batch.at(i) = total_cost;
-        collision_cost_batch.at(i) = collision_cost;
-    }
-
-    return std::make_pair(total_cost_batch, collision_cost_batch);
-}
-StateSequence SVGMPPI::predict_state_sequence(
-    const State& initial_state,
-    const ControlSequence& control_sequence
-) const
-{
-    // initialize state trajectory
-    StateSequence predicted_state_sequence_ = Eigen::MatrixXd::Zero(prediction_step_size_, STATE_SPACE::dim);
-
-    // set current state to state trajectory as initial state
-    predicted_state_sequence_.row(0) = initial_state;
-
-    for (size_t i = 0; i < prediction_step_size_ - 1; i++) {
-        double steering_ = control_sequence(i, CONTROL_SPACE::steering);
-
-        const double predicted_x_ = predicted_state_sequence_(i, STATE_SPACE::x);
-        const double predicted_y_ = predicted_state_sequence_(i, STATE_SPACE::y);;
-        const double predicted_yaw_ = predicted_state_sequence_(i, STATE_SPACE::yaw);
-        const double predicted_velocity_ = predicted_state_sequence_(i, STATE_SPACE::velocity);
-        const double predicted_steering_ = predicted_state_sequence_(i, STATE_SPACE::steering);
-
-        // kinematic bicycle model
-        const double sideslip_ = atan(lf_ / (lf_ + lr_) * tan(steering_));
-        const double predicted_delta_x_ = predicted_velocity_ * cos(predicted_yaw_ + sideslip_) * prediction_interval_;
-        const double predicted_delta_y_ = predicted_velocity_ * sin(predicted_yaw_ + sideslip_) * prediction_interval_;
-        const double predicted_delta_yaw_ = predicted_velocity_ * sin(sideslip_) / lr_ * prediction_interval_;
-        const double predicted_delta_steering_ = predicted_steering_;
-
-        double next_velocity_ = 0.0;
-        if (1) {
-            next_velocity_ = predict_constant_speed(predicted_velocity_);
-        }
-
-        // next state
-        predicted_state_sequence_(i + 1, STATE_SPACE::x) = predicted_x_ + predicted_delta_x_;
-        predicted_state_sequence_(i + 1, STATE_SPACE::y) = predicted_y_ + predicted_delta_y_;
-        predicted_state_sequence_(i + 1, STATE_SPACE::yaw) = std::atan2(sin(predicted_yaw_ + predicted_delta_yaw_), cos(predicted_yaw_ + predicted_delta_yaw_));
-        predicted_state_sequence_(i + 1, STATE_SPACE::velocity) = next_velocity_;
-        predicted_state_sequence_(i + 1, STATE_SPACE::steering) = predicted_steering_ + predicted_delta_steering_;
-    }
-
-    return predicted_state_sequence_;
-}
-std::pair<double, double> SVGMPPI::calculate_state_sequence_cost(
-    const StateSequence state_sequence,
-    const grid_map::GridMap& local_cost_map
-) const
-{
-    // total cost of summing stage cost and terminal cost
-    double state_squence_cost_sum_ = 0.0;
-
-    // stage cost
-    for (size_t i = 0; i < prediction_step_size_; i++) {
-        double state_squence_stage_cost_sum_ = 10.0;
-
-        State stage_state_ = state_sequence.row(i);
-        if (local_cost_map.isInside(grid_map::Position(stage_state_(STATE_SPACE::x), stage_state_(STATE_SPACE::y)))) {
-            state_squence_stage_cost_sum_ = local_cost_map.atPosition(
-                "collision", grid_map::Position(stage_state_(STATE_SPACE::x), stage_state_(STATE_SPACE::y))
-            );
-        }
-
-        state_squence_cost_sum_ += collision_weight_ * state_squence_stage_cost_sum_;
-    }
-
-    // terminal cost
-    const State terminal_state_ = state_sequence.row(prediction_step_size_ - 1);
-    double state_sequence_terminal_cost_sum_ = 10.0;
-    if (local_cost_map.isInside(grid_map::Position(terminal_state_(STATE_SPACE::x), terminal_state_(STATE_SPACE::y)))) {
-        state_sequence_terminal_cost_sum_ = local_cost_map.atPosition(
-            "collision", grid_map::Position(terminal_state_(STATE_SPACE::x), terminal_state_(STATE_SPACE::y))
-        );
-    }
-
-    state_squence_cost_sum_ += collision_weight_ * state_sequence_terminal_cost_sum_;
-
-    return std::make_pair(state_squence_cost_sum_, state_squence_cost_sum_);
-}
-
-std::vector<double> SVGMPPI::calculate_sample_cost_batch(
-    const double& lambda,
-    const double& alpha,
-    const std::vector<double> state_costs,
-    const ControlSequence initial_consrol_sequence,
-    const ControlSequence nominal_control_sequqnce,
-    const ControlSequenceBatch control_sequence,
-    const ControlCovarianceSequence control_inverse_covariance_sequence
-) const
-{
-    // 모든 sample의 cost들
-    std::vector<double> sample_costs = state_costs;
-
-    #pragma omp parallel for num_threads(thread_number_)
-    for (size_t i = 0; i < sample_number_; i++) {
-        for (size_t j = 0; j < prediction_horizon_ - 1; j++) {
-            const double control_cost = \
-                lambda * (1 - alpha) \
-                * (initial_consrol_sequence.row(j) - nominal_control_sequqnce.row(j)) \
-                * control_inverse_covariance_sequence[j] \
-                * control_sequence[i].row(j).transpose();
-            
-            sample_costs[i] += control_cost;
-        }
-    }
-
-    return sample_costs;
 }
 
 } // namespace planning
