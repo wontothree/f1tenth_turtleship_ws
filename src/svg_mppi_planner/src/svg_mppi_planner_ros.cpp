@@ -27,6 +27,11 @@ SVGMPPIPlannerROS::SVGMPPIPlannerROS() : Node("svg_mppi_planner_node")
         10
     );
 
+    path_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
+        "path",
+        10
+    );
+
     // timer_callback함수를 timerPeriod(ms)마다 호출한다.
     timer_ = this->create_wall_timer(std::chrono::milliseconds(timer_period), std::bind(&SVGMPPIPlannerROS::timer_callback, this));
 }
@@ -48,6 +53,7 @@ void SVGMPPIPlannerROS::timer_callback()
     //     weight_batch
     // );
 
+
     // // test code for visualize_state_sequence function
     // // please remove this code after implementing the function
     // planning::StateSequence state_sequence = Eigen::MatrixXd::Random(10, 5);
@@ -56,6 +62,17 @@ void SVGMPPIPlannerROS::timer_callback()
     //     state_sequence,
     //     "state_sequence",
     //     "r"
+    // );
+
+
+    // // test code for visualize_path function
+    // // please remove this code after implementing the function
+    // planning::StateSequence path = Eigen::MatrixXd::Random(10, 5);
+
+    // visualize_path(
+    //     path,
+    //     "path",
+    //     "g"
     // );
 }
 
@@ -200,6 +217,70 @@ void SVGMPPIPlannerROS::visualize_state_sequence(
         marker_array.markers.push_back(arrow);
     }
     marker_publisher_->publish(marker_array);
+}
+
+void SVGMPPIPlannerROS::visualize_path(
+    const planning::StateSequence& state_sequence,
+    const std::string& name_space,
+    const std::string& rgb
+)
+{
+    visualization_msgs::msg::MarkerArray marker_array;
+
+    visualization_msgs::msg::Marker line;
+
+    line.header.frame_id = robot_frame_id_;
+    line.header.stamp = this->get_clock()->now();
+    line.ns = name_space + "_line";
+    line.id = 0;
+    line.type = visualization_msgs::msg::Marker::LINE_STRIP;
+    line.action = visualization_msgs::msg::Marker::ADD;
+    line.pose.orientation.x = 0.0;
+    line.pose.orientation.y = 0.0;
+    line.pose.orientation.z = 0.0;
+    line.pose.orientation.w = 1.0;
+    line.scale.x = 0.01;
+    line.color.a = 1.0;
+    line.color.r = ((rgb == "r" || rgb == "red") ? 1.0 : 0.0);
+    line.color.g = ((rgb == "g" || rgb == "green") ? 1.0 : 0.0);
+    line.color.b = ((rgb == "b" || rgb == "blue") ? 1.0 : 0.0);
+    // line.lifetime = ros::Duration(0.1);
+
+    // nodes
+    visualization_msgs::msg::Marker nodes;
+
+    nodes.header.frame_id = robot_frame_id_;
+    nodes.header.stamp = this->get_clock()->now();
+    nodes.ns = name_space + "_nodes";
+    nodes.id = 1;
+    nodes.type = visualization_msgs::msg::Marker::SPHERE_LIST;
+    nodes.action = visualization_msgs::msg::Marker::ADD;
+    nodes.pose.orientation.x = 0.0;
+    nodes.pose.orientation.y = 0.0;
+    nodes.pose.orientation.z = 0.0;
+    nodes.pose.orientation.w = 1.0;
+    const double node_size = 0.1;
+    nodes.scale.x = node_size;
+    nodes.scale.y = node_size;
+    nodes.scale.z = node_size;
+    nodes.color.a = 1.0;
+    nodes.color.r = ((rgb == "r" || rgb == "red") ? 1.0 : 0.0);
+    nodes.color.g = ((rgb == "g" || rgb == "green") ? 1.0 : 0.0);
+    nodes.color.b = ((rgb == "b" || rgb == "blue") ? 1.0 : 0.0);
+    // nodes.lifetime = ros::Duration(0.1);
+
+    for (int j = 0; j < state_sequence.rows(); j++) {
+        geometry_msgs::msg::Point point;
+        point.x = state_sequence(j, STATE_SPACE::x);
+        point.y = state_sequence(j, STATE_SPACE::y);
+        point.z = 0.1;
+        line.points.push_back(point);
+        nodes.points.push_back(point);
+    }
+    marker_array.markers.push_back(line);
+    marker_array.markers.push_back(nodes);
+
+    path_publisher_->publish(marker_array);
 }
 
 } // namespace svg_mppi
