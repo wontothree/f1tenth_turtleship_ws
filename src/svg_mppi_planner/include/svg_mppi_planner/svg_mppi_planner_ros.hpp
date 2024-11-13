@@ -4,6 +4,8 @@
 
 #include <grid_map_ros/grid_map_ros.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
+#include <geometry_msgs/msg/point.hpp>
 
 #include "rclcpp/rclcpp.hpp"
 #include "svg_mppi_planner/svg_mppi.hpp"
@@ -30,7 +32,7 @@ class SVGMPPIPlannerROS : public rclcpp::Node {
 
     // publish
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_publisher_;
-
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_publisher_;
     /**
      * @brief This function is called in constant period of timer
      */
@@ -56,10 +58,15 @@ class SVGMPPIPlannerROS : public rclcpp::Node {
         const std::vector<double>& weight_batch);
 
     /**
-     * @brief 이진우 ref publish_traj
+     * @brief make topic msg to visualize state sequence that is tracked by the car (on rviz)
+     * @param state_sequence state sequence to visualize
+     * @param name_space namespace of the topic
+     * @param rgb color of the topic (r, g, b)
      */
     void visualize_state_sequence(
-        const planning::StateSequence& state_sequence);
+        const planning::StateSequence& state_sequence,
+        const std::string& name_space,
+        const std::string& rgb);
 
     /**
      * @brief 이진우 ref publish_path

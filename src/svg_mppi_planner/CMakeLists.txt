@@ -22,6 +22,7 @@ find_package(rclcpp REQUIRED)
 find_package(grid_map_ros REQUIRED)
 find_package(grid_map_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(OpenMP REQUIRED)
 
 include_directories(include/)
