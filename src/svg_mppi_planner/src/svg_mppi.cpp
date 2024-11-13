@@ -307,28 +307,28 @@ std::pair<double, double> SVGMPPI::calculate_state_sequence_cost(
 
     // stage cost
     for (size_t i = 0; i < PREDICTION_HORIZON - 1; i++) {
-        double state_squence_stage_cost_sum = 10.0;
+        double state_squence_stage_cost = 10.0;
 
         State stage_state = state_sequence.row(i);
         if (local_cost_map.isInside(grid_map::Position(stage_state(STATE_SPACE::x), stage_state(STATE_SPACE::y)))) {
-            state_squence_stage_cost_sum = local_cost_map.atPosition(
+            state_squence_stage_cost = local_cost_map.atPosition(
                 "collision", grid_map::Position(stage_state(STATE_SPACE::x), stage_state(STATE_SPACE::y))
             );
         }
 
-        state_squence_cost_sum += collision_weight_ * state_squence_stage_cost_sum;
+        state_squence_cost_sum += collision_weight_ * state_squence_stage_cost;
     }
 
     // terminal cost
-    const State terminal_state_ = state_sequence.row(prediction_step_size_ - 1);
-    double state_sequence_terminal_cost_sum_ = 10.0;
-    if (local_cost_map.isInside(grid_map::Position(terminal_state_(STATE_SPACE::x), terminal_state_(STATE_SPACE::y)))) {
-        state_sequence_terminal_cost_sum_ = local_cost_map.atPosition(
-            "collision", grid_map::Position(terminal_state_(STATE_SPACE::x), terminal_state_(STATE_SPACE::y))
+    const State terminal_state = state_sequence.row(prediction_step_size_ - 1);
+    double state_sequence_terminal_cost = 10.0;
+    if (local_cost_map.isInside(grid_map::Position(terminal_state(STATE_SPACE::x), terminal_state(STATE_SPACE::y)))) {
+        state_sequence_terminal_cost = local_cost_map.atPosition(
+            "collision", grid_map::Position(terminal_state(STATE_SPACE::x), terminal_state(STATE_SPACE::y))
         );
     }
 
-    state_squence_cost_sum += collision_weight_ * state_sequence_terminal_cost_sum_;
+    state_squence_cost_sum += collision_weight_ * state_sequence_terminal_cost;
 
     return std::make_pair(state_squence_cost_sum, state_squence_cost_sum);
 }

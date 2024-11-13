@@ -17,6 +17,12 @@ SVGMPPIPlannerROS::SVGMPPIPlannerROS() : Node("svg_mppi_planner_node")
         std::bind(&SVGMPPIPlannerROS::local_cost_map_callback, this, std::placeholders::_1)
     );
 
+    odometry_subscriber_ = this->create_subscription<nav_msgs::msg::Odometry>(
+        "ego_racecar/odom",
+        10,
+        std::bind(&SVGMPPIPlannerROS::odometry_callback, this, std::placeholders::_1)
+    );
+
     marker_array_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
         "candidate_paths",
         10
@@ -38,8 +44,61 @@ SVGMPPIPlannerROS::SVGMPPIPlannerROS() : Node("svg_mppi_planner_node")
 
 void SVGMPPIPlannerROS::timer_callback()
 {
-    // // test code for visualize_state_sequence_batch function
-    // // please remove this code after implementing the function
+    // svg mppi solve
+    svg_mppi::planning::State initial_state = svg_mppi::planning::State::Zero();
+    initial_state[STATE_SPACE::x] = robot_state_.x;
+    initial_state[STATE_SPACE::y] = robot_state_.y;
+    initial_state[STATE_SPACE::yaw] = robot_state_.yaw;
+    initial_state[STATE_SPACE::velocity] = robot_state_.velocity;
+    initial_state[STATE_SPACE::steering] = robot_state_.steering;
+
+
+    // test
+    svg_mppi::planning::ControlSequence control_mean_sequence_tmp_ = Eigen::MatrixXd::Zero(
+        10 - 1, CONTROL_SPACE::dim
+    );
+    control_mean_sequence_tmp_ << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+
+    svg_mppi::planning::ControlCovarianceSequence control_covariance_sequence_tmp_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+        10 - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
+    );
+    control_covariance_sequence_tmp_[0] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    control_covariance_sequence_tmp_[1] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    control_covariance_sequence_tmp_[2] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    control_covariance_sequence_tmp_[3] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    control_covariance_sequence_tmp_[4] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    control_covariance_sequence_tmp_[5] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    control_covariance_sequence_tmp_[6] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    control_covariance_sequence_tmp_[7] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    control_covariance_sequence_tmp_[8] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+
+    svg_mppi_pointer_->random_sampling(
+        control_mean_sequence_tmp_, 
+        control_covariance_sequence_tmp_
+    );
+
+    svg_mppi::planning::StateSequence predicted_state_sequence = svg_mppi_pointer_->predict_state_sequence(
+        initial_state, svg_mppi_pointer_->noised_control_sequence_batch_[2]
+    );
+
+    // std::cout << predicted_state_sequence << std::endl;
+
+    std::vector<double> weight_batch = {
+        1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+    };
+
+    visualize_state_sequence_batch(
+        svg_mppi_pointer_->noised_control_sequence_batch_,
+        weight_batch
+    );
+
+    std::cout << "noised_control_sequence_batch_:\n";
+    // for (size_t i = 0; i < svg_mppi_pointer_->noised_control_sequence_batch_.size(); ++i) {
+    //     std::cout << svg_mppi_pointer_->noised_control_sequence_batch_[i] << "\n";
+    // }
+    // std::cout << svg_mppi_pointer_->noised_control_sequence_batch_.size() << std::endl;
+
+    // // debeg
     // planning::StateSequenceBatch state_sequence_batch = {
     //     Eigen::MatrixXd::Random(10, 5),
     //     Eigen::MatrixXd::Random(10, 5),
@@ -47,7 +106,6 @@ void SVGMPPIPlannerROS::timer_callback()
     // };
 
     // std::vector<double> weight_batch = {1.0, 2.0, 3.0};
-
     // visualize_state_sequence_batch(
     //     state_sequence_batch,
     //     weight_batch
@@ -87,12 +145,44 @@ void SVGMPPIPlannerROS::local_cost_map_callback(
     }
 
     // flag for if received local cost map
-    isLocalCostMapReceived_ = true;
+    is_local_cost_map_received_ = true;
 
-    Eigen::MatrixXf& costmapData = local_cost_map_->get("collision_layer");
-    std::cout << "----------------------------------" << std::endl;
-    std::cout << costmapData << std::endl;
-    std::cout << "----------------------------------" << std::endl;
+    // for debug
+    // Eigen::MatrixXf& costmapData = local_cost_map_->get("collision_layer");
+    // std::cout << "----------------------------------" << std::endl;
+    // std::cout << costmapData << std::endl;
+    // std::cout << "----------------------------------" << std::endl;
+}
+
+void SVGMPPIPlannerROS::odometry_callback(
+    const nav_msgs::msg::Odometry::SharedPtr odometry
+)
+{
+    // localizeless mode
+    robot_state_.x = 0.0;
+    robot_state_.y = 0.0;
+    robot_state_.yaw = 0.0;
+    robot_state_.velocity = odometry->twist.twist.linear.x;
+    
+    is_odometry_received_ = true;
+
+    // // for debug
+    // // print position
+    // std::cout << "Position:"
+    //           << "\n  x: " << odometry->pose.pose.position.x
+    //           << "\n  y: " << odometry->pose.pose.position.y
+    //           << "\n  z: " << odometry->pose.pose.position.z 
+    //           << std::endl;
+
+    // // print velocity
+    // std::cout << "Velocity:"
+    //           << "\n  linear x: " << odometry->twist.twist.linear.x
+    //           << "\n  linear y: " << odometry->twist.twist.linear.y
+    //           << "\n  linear z: " << odometry->twist.twist.linear.z
+    //           << "\n  angular x: " << odometry->twist.twist.angular.x
+    //           << "\n  angular y: " << odometry->twist.twist.angular.y
+    //           << "\n  angular z: " << odometry->twist.twist.angular.z 
+    //           << std::endl;
 }
 
 void SVGMPPIPlannerROS::visualize_state_sequence_batch(

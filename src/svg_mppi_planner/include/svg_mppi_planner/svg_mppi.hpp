@@ -11,7 +11,8 @@ namespace svg_mppi {
 namespace planning {
 
 class SVGMPPI {
-private:
+// private:
+public:
     // ----------------------------------------------------------------------------------------------------
 
     // Constant for Model Predictive Control
@@ -25,6 +26,8 @@ private:
     const double non_biased_sampling_rate_ = 0.1;
     const size_t SAMPLE_NUMBER = 10;
     const double NON_BIASED_SAMPLING_RATE = 1;
+    const double collision_weight_ = 1.0;
+    const double COLLISION_WEIGHT = 1.0;
 
     // Constant for F1/10 vehicle
     const double L_F = 0.189;
@@ -42,7 +45,6 @@ private:
 
     // etc
     const int thread_number_ = 4;
-    const double collision_weight_ = 1.0;
     const std::array<double, CONTROL_SPACE::dim> steering_control_covariance_for_gradient_estimation_ = {0.01};
     const double grad_lambda_ = 3.0;
     const double gaussian_fitting_lambda_ = 0.1;
@@ -88,7 +90,7 @@ public:
         const State& initial_state
     );
 
-private:
+// private:
 
     /**
      * @brief sampling several control sequences based on non-biased and biased sampling
@@ -328,7 +330,7 @@ private:
         // std::cout << "Collision Rate:" << std::endl;
         // std::cout << collision_rate_ << std::endl;
 
-        // ------------------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------------
 
         // function approximate_gradient_log_posterior_batch
         // State state_tmp_;
@@ -340,7 +342,7 @@ private:
 
         // std::cout << a << std::endl;
 
-        // ------------------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------------
 
         // // test function random_sampling
 
@@ -423,13 +425,13 @@ private:
         //     std::cout << noise_sequence_batch_[i] << "\n";
         // }
 
-        // // print noised_control_sequence_batch_
+        // print noised_control_sequence_batch_
         // std::cout << "noised_control_sequence_batch_:\n";
         // for (size_t i = 0; i < noised_control_sequence_batch_.size(); ++i) {
         //     std::cout << noised_control_sequence_batch_[i] << "\n";
         // }
 
-        // ------------------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------------
 
         // test function predict_state_sequence
 
@@ -448,6 +450,11 @@ private:
         StateSequence predicted_state_sequence = predict_state_sequence(state_tmp, control_sequence_tmp);
 
         std::cout << predicted_state_sequence << std::endl;
+
+        // ----------------------------------------------------------------------------------------------------
+
+        // test function calculate_state_sequence_cost
+
     }
 };
 

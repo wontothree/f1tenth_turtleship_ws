@@ -55,7 +55,7 @@ you shoud install package `laser_geometry`. 이 패키지는 `tf2`에 의존하�
 
 ```
 sudo apt-get update
-sudo apt install ros-foxy-laser-geometry #
+sudo apt install ros-foxy-laser-geometry
 sudo apt-get install ros-foxy-laser-geometry
 ```
 
