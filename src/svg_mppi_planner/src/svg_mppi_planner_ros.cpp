@@ -38,12 +38,16 @@ SVGMPPIPlannerROS::SVGMPPIPlannerROS() : Node("svg_mppi_planner_node")
         10
     );
 
-    // timer_callback함수를 timerPeriod(ms)마다 호출한다.
-    timer_ = this->create_wall_timer(std::chrono::milliseconds(timer_period), std::bind(&SVGMPPIPlannerROS::timer_callback, this));
+    timer_ = this->create_wall_timer(
+        std::chrono::milliseconds(timer_period), std::bind(&SVGMPPIPlannerROS::timer_callback, this)
+    );
 }
 
 void SVGMPPIPlannerROS::timer_callback()
 {
+
+    // steer observer
+
     // svg mppi solve
     svg_mppi::planning::State initial_state = svg_mppi::planning::State::Zero();
     initial_state[STATE_SPACE::x] = robot_state_.x;
@@ -52,40 +56,42 @@ void SVGMPPIPlannerROS::timer_callback()
     initial_state[STATE_SPACE::velocity] = robot_state_.velocity;
     initial_state[STATE_SPACE::steering] = robot_state_.steering;
 
+    const auto [updated_control_sequence, updated_collision_rate] = svg_mppi_pointer_->solve(initial_state);
 
-    // test
-    svg_mppi::planning::ControlSequence control_mean_sequence_tmp_ = Eigen::MatrixXd::Zero(
-        10 - 1, CONTROL_SPACE::dim
-    );
-    control_mean_sequence_tmp_ << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
 
-    svg_mppi::planning::ControlCovarianceSequence control_covariance_sequence_tmp_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
-        10 - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
-    );
-    control_covariance_sequence_tmp_[0] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-    control_covariance_sequence_tmp_[1] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-    control_covariance_sequence_tmp_[2] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-    control_covariance_sequence_tmp_[3] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-    control_covariance_sequence_tmp_[4] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-    control_covariance_sequence_tmp_[5] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-    control_covariance_sequence_tmp_[6] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-    control_covariance_sequence_tmp_[7] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-    control_covariance_sequence_tmp_[8] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    // // test
+    // svg_mppi::planning::ControlSequence control_mean_sequence_tmp_ = Eigen::MatrixXd::Zero(
+    //     10 - 1, CONTROL_SPACE::dim
+    // );
+    // control_mean_sequence_tmp_ << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
 
-    svg_mppi_pointer_->random_sampling(
-        control_mean_sequence_tmp_, 
-        control_covariance_sequence_tmp_
-    );
+    // svg_mppi::planning::ControlCovarianceSequence control_covariance_sequence_tmp_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+    //     10 - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
+    // );
+    // control_covariance_sequence_tmp_[0] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    // control_covariance_sequence_tmp_[1] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    // control_covariance_sequence_tmp_[2] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    // control_covariance_sequence_tmp_[3] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    // control_covariance_sequence_tmp_[4] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    // control_covariance_sequence_tmp_[5] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    // control_covariance_sequence_tmp_[6] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    // control_covariance_sequence_tmp_[7] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+    // control_covariance_sequence_tmp_[8] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
 
-    svg_mppi::planning::StateSequence predicted_state_sequence = svg_mppi_pointer_->predict_state_sequence(
-        initial_state, svg_mppi_pointer_->noised_control_sequence_batch_[2]
-    );
+    // svg_mppi_pointer_->random_sampling(
+    //     control_mean_sequence_tmp_, 
+    //     control_covariance_sequence_tmp_
+    // );
 
-    visualize_state_sequence(
-        predicted_state_sequence,
-        "state_sequence",
-        "r"
-    );
+    // svg_mppi::planning::StateSequence predicted_state_sequence = svg_mppi_pointer_->predict_state_sequence(
+    //     initial_state, svg_mppi_pointer_->noised_control_sequence_batch_[2]
+    // );
+
+    // visualize_state_sequence(
+    //     predicted_state_sequence,
+    //     "state_sequence",
+    //     "r"
+    // );
 
     // std::cout << "noised_control_sequence_batch_:\n";
     // for (size_t i = 0; i < svg_mppi_pointer_->noised_control_sequence_batch_.size(); ++i) {
@@ -116,7 +122,6 @@ void SVGMPPIPlannerROS::timer_callback()
     //     "state_sequence",
     //     "r"
     // );
-
 
     // // test code for visualize_path function
     // // please remove this code after implementing the function
