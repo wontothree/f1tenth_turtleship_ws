@@ -20,14 +20,14 @@ public:
     SVGMPPIPlannerROS();
     ~SVGMPPIPlannerROS() {};
 
-// private:
+private:
     const double gridLength = 20.0;                               // one side length of square cost map (m)
     const double resolution = 0.07;                               // resolution of cost map (m / grid)
     const std::string robot_frame_id_ = "ego_racecar/base_link";  // frame id of robot
     const std::string map_frame_id_ = "map";                      // frame id of map
     const int timer_period = 10;                                  // timer period (ms)
 
-// private:
+private:
 
     std::unique_ptr<svg_mppi::planning::SVGMPPI> svg_mppi_pointer_;
 
@@ -41,7 +41,7 @@ public:
 
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_subscriber_;
     
-// private:
+private:
     /**
      * @brief This function is called in constant period of timer
      */

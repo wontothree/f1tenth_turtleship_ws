@@ -48,6 +48,6 @@ namespace planning {
     using StateSequenceBatch = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;
     using ControlSequenceBatch = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;
 
-    using ControlCovarianceSequence = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;
+    using ControlCovarianceMatrixSequence = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>;
 } // namespace planning
 } // namespace svg_mppi

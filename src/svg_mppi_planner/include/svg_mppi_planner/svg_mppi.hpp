@@ -16,7 +16,7 @@ public:
     // ----------------------------------------------------------------------------------------------------
 
     // Constant for Model Predictive Control
-    const size_t prediction_horizon_ = 10;
+    const size_t prediction_horizon_ = 15;
     const size_t prediction_step_size_ = 10;
     const size_t PREDICTION_HORIZON = 10;
     const double PREDICTION_INTERVAL = 0.05; // s
@@ -48,8 +48,8 @@ public:
     const std::array<double, CONTROL_SPACE::dim> steering_control_covariance_for_gradient_estimation_ = {0.01};
     const double grad_lambda_ = 3.0;
     const double gaussian_fitting_lambda_ = 0.1;
-    const double lambda_ = 3.0;
-    const double alpha_ = 0.1;
+    const double LAMBDA = 3.0;
+    const double ALPHA = 0.1;
 
     // ----------------------------------------------------------------------------------------------------
 
@@ -58,18 +58,17 @@ public:
     std::unique_ptr<std::vector<std::array<std::normal_distribution<>, CONTROL_SPACE::dim>>> normal_distribution_pointer_;
     const std::array<double, CONTROL_SPACE::dim> max_control_ = {MAX_STEERING};
     const std::array<double, CONTROL_SPACE::dim> min_control_ = {MIN_STEERING};
-    ControlSequence control_mean_sequence_;
-    ControlCovarianceSequence control_covariance_sequence_;
     ControlSequenceBatch noise_sequence_batch_;
-    ControlSequenceBatch noised_control_sequence_batch_; // object
+    ControlSequenceBatch noised_control_sequence_batch_; // ***
+    ControlSequence control_mean_sequence_;
+    ControlCovarianceMatrixSequence control_covariance_matrix_sequence_;
+    ControlCovarianceMatrixSequence control_inverse_covariance_matrix_sequence_;
 
-    // calculate_state_cost_batch (변경될 멤버 변수)
-    StateSequenceBatch state_sequence_batch_;
+    // called by function calculate_state_cost_batch, and used for visualization
+    StateSequenceBatch state_sequence_batch_; // ***
 
     // for approximate_gradient_log_likelihood
-    ControlCovarianceSequence control_inverse_covariance_sequence_;
     ControlSequence previous_control_mean_sequence_;
-
 
     // local cost map
     grid_map::GridMap local_cost_map_;
@@ -90,23 +89,33 @@ public:
         const State& initial_state
     );
 
-// private:
+    /**
+     * @brief set local cost map for planning
+     * @param local_cost_map
+     */
+    void set_local_cost_map(
+        grid_map::GridMap& local_cost_map
+    )
+    {
+        local_cost_map_ = local_cost_map;
+    }
 
+private:
     /**
      * @brief sampling several control sequences based on non-biased and biased sampling
-     * @param control_mean_sequence for biased sampling
-     * @param control_covariance_sequence for biased sampling
+     * @param control_mean_sequence used as mean for biased sampling
+     * @param control_covariance_sequence used covariance for biased sampling
      * 
      * update member variables
      * @note control_mean_sequence_ by setter function
-     * @note control_covariance_sequence_ by setter function
+     * @note control_covariance_matrix_sequence_ by setter function
      * @note normal_distribution_pointer_
      * @note noise_sequence_batch_
      * @note noised_control_sequence_batch_
      */
     void random_sampling(
         const ControlSequence control_mean_sequence,
-        const ControlCovarianceSequence control_covariance_sequence
+        const ControlCovarianceMatrixSequence control_covariance_sequence
     );
 
     /**
@@ -135,32 +144,33 @@ public:
      * @brief 모든 샘플에 대한 각각의 state cost를 계산한다.
      * @param initial_state
      * @param local_cost_map
-     * @param state_sequence_batch 상태를 저장할 멤버변수를 입력한다.
+     * 
+     * update member variables
+     * @note state_sequence_batch_ all sample of state sequence
      */
-    std::pair<std::vector<double>, std::vector<double>> calculate_state_cost_batch(
+    std::pair<std::vector<double>, std::vector<double>> calculate_state_sequence_cost_batch(
         const State& initial_state,
-        const grid_map::GridMap& local_cost_map,
-        StateSequenceBatch* state_sequence_batch
-    ) const;
+        const grid_map::GridMap& local_cost_map
+    );
 
     /**
-     * @brief
+     * @brief calculate final cost for all state sequence
      * @param lambda Regularization parameter
      * @param alpha Control input difference regularization
-     * @param state_cost Vector of state costs
-     * @param initial_control_sequence Initial control sequence
+     * @param state_cost_batch state costs of all sample
      * @param nominal_control_sequence Nominal control sequence
-     * @param control_sequence Batch of control sequences
      * @return A vector of weights for each trajectory
+     * 
+     * used member variable
+     * @note control_mean_sequence_
+     * @note control_inverse_covariance_matrix_sequence_
+     * @note noised_control_sequence_batch_
      */
     std::vector<double> calculate_sample_cost_batch(
         const double& lambda,
         const double& alpha,
-        const std::vector<double> state_costs,
-        const ControlSequence initial_consrol_sequence,
-        const ControlSequence nominal_control_sequence,
-        const ControlSequenceBatch control_sequence,
-        const ControlCovarianceSequence control_inverse_covariance_sequence
+        const std::vector<double> state_cost_batch,
+        const ControlSequence nominal_control_sequence
     ) const;
 
 
@@ -185,7 +195,7 @@ public:
         const State& initial_state,
         const ControlSequence& control_mean_sequence,
         const ControlSequence& noised_control_mean_sequence,
-        const ControlCovarianceSequence& control_inverse_covariance_sequence
+        const ControlCovarianceMatrixSequence& control_inverse_covariance_sequence
     );
 
     /**
@@ -276,13 +286,6 @@ public:
         return std::make_pair(mean, variance);
     }
 
-    void set_local_cost_map(
-        const grid_map::GridMap& local_cost_map
-    )
-    {
-        local_cost_map_ = local_cost_map;
-    }
-
     void set_control_mean_sequence(
         const ControlSequence& control_mean_sequence
     )
@@ -291,21 +294,23 @@ public:
     }
 
     void set_control_covariance_sequence(
-        const ControlCovarianceSequence& control_covariance_sequence
+        const ControlCovarianceMatrixSequence& control_covariance_sequence
     )
     {
-        control_covariance_sequence_ = control_covariance_sequence;
+        control_covariance_matrix_sequence_ = control_covariance_sequence;
 
         // small value to add diagonal elements for preventing singular matrix
         const double epsilon_ = 1e-4;
 
         // calculate inverse of covariance matrices in advance to reduce computational cost
         for (size_t i = 0; i < prediction_step_size_ - 1; i++) {
-            control_inverse_covariance_sequence_[i] = control_covariance_sequence_[i].inverse() + epsilon_ * Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim);
+            control_inverse_covariance_matrix_sequence_[i] = control_covariance_matrix_sequence_[i].inverse() + epsilon_ * Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim);
         }
     }
 
-    void test()
+    void test(
+        const State& initial_state
+    )
     {
         // State state_tmp_;
         // state_tmp_ << 0.0, 0.0, 0.0, 1.0, 0.1;
@@ -354,28 +359,28 @@ public:
         // std::cout << "control_mean_sequence_tmp_" << std::endl;
         // std::cout << control_mean_sequence_tmp_ << std::endl;
 
-        // ControlCovarianceSequence control_covariance_sequence_tmp_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+        // ControlCovarianceMatrixSequence control_covariance_matrix_sequence_tmp = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
         //     PREDICTION_HORIZON - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
         // );
-        // control_covariance_sequence_tmp_[0] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_sequence_tmp_[1] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_sequence_tmp_[2] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_sequence_tmp_[3] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_sequence_tmp_[4] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_sequence_tmp_[5] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_sequence_tmp_[6] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_sequence_tmp_[7] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_sequence_tmp_[8] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // std::cout << "control_covariance_sequence_tmp_" << std::endl;
-        // std::cout << control_covariance_sequence_tmp_[0] << std::endl;
-        // std::cout << control_covariance_sequence_tmp_[1] << std::endl;
-        // std::cout << control_covariance_sequence_tmp_[2] << std::endl;
-        // std::cout << control_covariance_sequence_tmp_[3] << std::endl;
-        // std::cout << control_covariance_sequence_tmp_[4] << std::endl;
-        // std::cout << control_covariance_sequence_tmp_[5] << std::endl;
-        // std::cout << control_covariance_sequence_tmp_[6] << std::endl;
-        // std::cout << control_covariance_sequence_tmp_[7] << std::endl;
-        // std::cout << control_covariance_sequence_tmp_[8] << std::endl;
+        // control_covariance_matrix_sequence_tmp[0] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // control_covariance_matrix_sequence_tmp[1] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // control_covariance_matrix_sequence_tmp[2] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // control_covariance_matrix_sequence_tmp[3] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // control_covariance_matrix_sequence_tmp[4] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // control_covariance_matrix_sequence_tmp[5] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // control_covariance_matrix_sequence_tmp[6] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // control_covariance_matrix_sequence_tmp[7] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // control_covariance_matrix_sequence_tmp[8] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // std::cout << "control_covariance_matrix_sequence_tmp" << std::endl;
+        // std::cout << control_covariance_matrix_sequence_tmp[0] << std::endl;
+        // std::cout << control_covariance_matrix_sequence_tmp[1] << std::endl;
+        // std::cout << control_covariance_matrix_sequence_tmp[2] << std::endl;
+        // std::cout << control_covariance_matrix_sequence_tmp[3] << std::endl;
+        // std::cout << control_covariance_matrix_sequence_tmp[4] << std::endl;
+        // std::cout << control_covariance_matrix_sequence_tmp[5] << std::endl;
+        // std::cout << control_covariance_matrix_sequence_tmp[6] << std::endl;
+        // std::cout << control_covariance_matrix_sequence_tmp[7] << std::endl;
+        // std::cout << control_covariance_matrix_sequence_tmp[8] << std::endl;
 
         // // before
 
@@ -403,7 +408,7 @@ public:
         //     std::cout << noised_control_sequence_batch_[i] << "\n";
         // }
 
-        // random_sampling(control_mean_sequence_tmp_, control_covariance_sequence_tmp_);
+        // random_sampling(control_mean_sequence_tmp_, control_covariance_matrix_sequence_tmp);
 
         // // after
 
@@ -433,7 +438,7 @@ public:
 
         // ----------------------------------------------------------------------------------------------------
 
-        // test function predict_state_sequence
+        // // test function predict_state_sequence & calculate_state_sequence_cost
 
         // State state_tmp;
         // state_tmp << 0.0, 0.0, 0.0, 1.0, 0.0;
@@ -449,12 +454,50 @@ public:
 
         // StateSequence predicted_state_sequence = predict_state_sequence(state_tmp, control_sequence_tmp);
 
+        // std::cout << "predicted_state_sequence" << std::endl;
         // std::cout << predicted_state_sequence << std::endl;
 
+        // grid_map::GridMap* local_cost_map = &local_cost_map_;
+        // Eigen::MatrixXf& costmapData = local_cost_map->get("collision_layer");
+        // std::cout << "----------------------------------" << std::endl;
+        // std::cout << costmapData << std::endl;
+        // std::cout << "----------------------------------" << std::endl;
+
+        // const auto [state_squence_cost_sum1, state_squence_cost_sum2] = calculate_state_sequence_cost(
+        //     predicted_state_sequence,
+        //     local_cost_map_
+        // );
+
+        // std::cout << state_squence_cost_sum1 << std::endl;
+    
+        
         // ----------------------------------------------------------------------------------------------------
 
-        // test function calculate_state_sequence_cost
+        // test calculate_state_sequence_cost_batch & calculate_sample_cost_batch
 
+        const auto [total_cost_batch, collision_cost_batch] = calculate_state_sequence_cost_batch(
+            initial_state,
+            local_cost_map_
+        );
+
+        // for (const auto& cost : total_cost_batch) {
+        //     std::cout << cost << " ";
+        // }
+        // std::cout << std::endl;
+
+        const auto sample_cost_batch = calculate_sample_cost_batch(
+            LAMBDA,
+            ALPHA,
+            total_cost_batch,
+            nominal_control_sequence_
+        );
+
+        // for (const auto& cost : sample_cost_batch) {
+        //     std::cout << cost << " ";
+        // }
+        // std::cout << std::endl;
+
+        // ----------------------------------------------------------------------------------------------------
     }
 };
 

@@ -81,7 +81,11 @@ local costmap generator
 
 ```bash
 ros2 run tf2_ros static_transform_publisher 0.09 0.0 0.0 0.0 0.0 0.0 "ego_racecar/laser" "ego_racecar/base_link"
+
+ros2 run local_costmap_generator local_costmap_generator_node
 ```
+
+
 
 # Hardware
 
