@@ -68,19 +68,19 @@ void SVGMPPIPlannerROS::timer_callback()
     initial_state[STATE_SPACE::velocity] = robot_state_.velocity;
     initial_state[STATE_SPACE::steering] = robot_state_.steering;
 
-    const auto [updated_control_sequence, updated_collision_rate] = svg_mppi_pointer_->solve(initial_state);
+    // const auto [updated_control_sequence, updated_collision_rate] = svg_mppi_pointer_->solve(initial_state);
 
-    visualize_state_sequence(
-        svg_mppi_pointer_->state_sequence_batch_[0],
-        "state_sequence",
-        "r"
-    );
+    // visualize_state_sequence(
+    //     svg_mppi_pointer_->state_sequence_batch_[0],
+    //     "state_sequence",
+    //     "r"
+    // );
 
-    std::vector<double> weight_batch = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-    visualize_state_sequence_batch(
-        svg_mppi_pointer_->state_sequence_batch_,
-        weight_batch
-    );
+    // std::vector<double> weight_batch = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+    // visualize_state_sequence_batch(
+    //     svg_mppi_pointer_->state_sequence_batch_,
+    //     weight_batch
+    // );
 
 
     // // debeg

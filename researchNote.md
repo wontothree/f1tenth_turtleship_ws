@@ -887,7 +887,6 @@ Implementation
             
             # Accumulate the cost for trajectory
             S_tilde(τ_k) += φ(x_i, u_i, ε_i,k, t_i)
-
 ```
 
 - calculate_sample_costs
@@ -908,3 +907,21 @@ Implementation
 *11/13/2024*
 
 random_sampling 함수 test
+
+*11/15/2024*
+
+Today I will test functions - approximate_gradient_log_posterior_batch, approximate_gradient_log_likelihood
+
+```cpp
+for (size_t i = 0; i < guide_samples_ptr_->get_num_samples(); i++) {
+    guide_samples_ptr_->noised_control_seq_samples_[i] += svgd_step_size_ * grad_log_posterior[i];
+}
+```
+
+guide_samples_ptr_->noised_control_seq_samples_[i] be declared in type ControlSequenceBatch
+
+The code move each control sequence as same size.
+
+guide_samples_ptr_->noised_control_seq_samples_[i]은 이동시켜야 할 대상이다.
+
+SVG MPPI는 previous_control_sequence_와 particle의 차이를 최소화라고 싶어한다.
