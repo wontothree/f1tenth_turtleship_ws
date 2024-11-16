@@ -23,7 +23,7 @@ public:
     const double PREDICTION_INTERVAL = 0.05; // s
 
     // Constant for MPPI
-    const size_t SAMPLE_NUMBER = 10;
+    const size_t SAMPLE_NUMBER = 100;
     const double NON_BIASED_SAMPLING_RATE = 0.1;
     const double COLLISION_WEIGHT = 1.0;
 
@@ -39,7 +39,7 @@ public:
     const size_t GUIDE_SAMPLE_NUMBER = 1;
     const size_t SVGD_ITERATION_NUMBER = 3;
     const double SVGD_STEP_SIZE = 0.005;
-    const size_t SAMPLE_NUMBER_FOR_GRADIENT_ESTIMATION = 10; // shoud be = SAMPLE_NUMBER
+    const size_t SAMPLE_NUMBER_FOR_GRADIENT_ESTIMATION = 100; // shoud be = SAMPLE_NUMBER
     const double SVG_LAMBDA = 3.0;
     const size_t SAMPLE_BATCH_NUMBER = 100;
     const bool IS_COVARIANCE_ADAPTATION = true;
@@ -300,31 +300,31 @@ private:
         // // test function random_sampling
 
         // control sequence
-        ControlSequence reference_control_sequence_tmp = Eigen::MatrixXd::Zero(
-            15 - 1, CONTROL_SPACE::dim
-        );
-        reference_control_sequence_tmp << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+        // ControlSequence reference_control_sequence_tmp = Eigen::MatrixXd::Zero(
+        //     15 - 1, CONTROL_SPACE::dim
+        // );
+        // reference_control_sequence_tmp << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
         // std::cout << "reference_control_sequence_tmp" << std::endl;
         // std::cout << reference_control_sequence_tmp << std::endl;
 
         // control covariance matrix 
-        ControlCovarianceMatrixSequence reference_control_covariance_matrix_sequence_tmp = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
-            PREDICTION_HORIZON - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
-        );
-        reference_control_covariance_matrix_sequence_tmp[0] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[1] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[2] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[3] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[4] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[5] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[6] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[7] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[8] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[9] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[10] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[11] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[12] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        reference_control_covariance_matrix_sequence_tmp[13] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // ControlCovarianceMatrixSequence reference_control_covariance_matrix_sequence_tmp = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+        //     PREDICTION_HORIZON - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
+        // );
+        // reference_control_covariance_matrix_sequence_tmp[0] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[1] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[2] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[3] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[4] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[5] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[6] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[7] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[8] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[9] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[10] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[11] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[12] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // reference_control_covariance_matrix_sequence_tmp[13] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
         // std::cout << "reference_control_covariance_matrix_sequence_tmp" << std::endl;
         // std::cout << reference_control_covariance_matrix_sequence_tmp[0] << std::endl;
         // std::cout << reference_control_covariance_matrix_sequence_tmp[1] << std::endl;

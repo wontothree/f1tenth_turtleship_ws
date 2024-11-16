@@ -39,7 +39,6 @@ SVGMPPI::SVGMPPI()
         );
     }
 
-
     state_sequence_batch_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
         SAMPLE_NUMBER, Eigen::MatrixXd::Zero(PREDICTION_HORIZON, STATE_SPACE::dim)
     );
@@ -57,166 +56,164 @@ std::pair<ControlSequence, double> SVGMPPI::solve(
     const State& initial_state
 )
 {
-    // // Transport guide particles by sten variational gradient descent
+    // Transport guide particles by sten variational gradient descent
 
-    // // cost batch
-    // std::vector<double> costs_history;
-    // std::vector<ControlSequence> control_sequence_history_;
+    // cost batch
+    std::vector<double> costs_history;
+    std::vector<ControlSequence> control_sequence_history_;
 
-    // for (size_t i = 0; i < SVGD_ITERATION_NUMBER; i++) {
-    //     // Transport samples by stein variational gradient descent
-    //     const ControlSequenceBatch gradient_log_posterior_batch_ = approximate_gradient_log_posterior_batch(
-    //         *guide_smapling_pointer_,
-    //         initial_state
-    //     );
+    for (size_t i = 0; i < SVGD_ITERATION_NUMBER; i++) {
+        // Transport samples by stein variational gradient descent
+        const ControlSequenceBatch gradient_log_posterior_batch_ = approximate_gradient_log_posterior_batch(
+            *guide_smapling_pointer_,
+            initial_state
+        );
 
-    //     #pragma omp parallel for num_threads(THREAD_NUMBER)
-    //     for (size_t i = 0; i < guide_smapling_pointer_->get_sample_number(); i++) {
-    //         // svgd update
-    //         guide_smapling_pointer_->noised_control_sequence_batch_[i] += SVGD_STEP_SIZE * gradient_log_posterior_batch_[i];
-    //     }
+        #pragma omp parallel for num_threads(THREAD_NUMBER)
+        for (size_t i = 0; i < guide_smapling_pointer_->get_sample_number(); i++) {
+            // svgd update
+            guide_smapling_pointer_->noised_control_sequence_batch_[i] += SVGD_STEP_SIZE * gradient_log_posterior_batch_[i];
+        }
 
-    //     // store costs and samples for adaptive covariance calculation
-    //     const std::vector<double> state_cost_batch = calculate_state_sequence_cost_batch(
-    //         *guide_smapling_pointer_,
-    //         initial_state,
-    //         local_cost_map_
-    //     ).first;
+        // store costs and samples for adaptive covariance calculation
+        const std::vector<double> state_cost_batch = calculate_state_sequence_cost_batch(
+            *guide_smapling_pointer_,
+            initial_state,
+            local_cost_map_
+        ).first;
 
-    //     costs_history.insert(
-    //         costs_history.end(),
-    //         state_cost_batch.begin(),
-    //         state_cost_batch.end()
-    //     );
+        costs_history.insert(
+            costs_history.end(),
+            state_cost_batch.begin(),
+            state_cost_batch.end()
+        );
 
-    //     control_sequence_history_.insert(
-    //         control_sequence_history_.end(),
-    //         guide_smapling_pointer_->noised_control_sequence_batch_.begin(),
-    //         guide_smapling_pointer_->noised_control_sequence_batch_.end()
-    //     );
-    // }
+        control_sequence_history_.insert(
+            control_sequence_history_.end(),
+            guide_smapling_pointer_->noised_control_sequence_batch_.begin(),
+            guide_smapling_pointer_->noised_control_sequence_batch_.end()
+        );
+    }
 
-    // // 왜 또 계산하는 걸까?
-    // const auto guide_state_cost_batch = calculate_state_sequence_cost_batch(
-    //     *guide_smapling_pointer_,
-    //     initial_state,
-    //     local_cost_map_
-    // ).first;
-    // const size_t min_guide_state_cost_index = std::distance(
-    //     guide_state_cost_batch.begin(),
-    //     std::min_element(
-    //         guide_state_cost_batch.begin(),
-    //         guide_state_cost_batch.end()
-    //     )
-    // );
-    // const ControlSequence svg_control_sequence = guide_smapling_pointer_->noised_control_sequence_batch_[
-    //     min_guide_state_cost_index
-    // ]; // Stein Variational Guided
+    const auto guide_state_cost_batch = calculate_state_sequence_cost_batch(
+        *guide_smapling_pointer_,
+        initial_state,
+        local_cost_map_
+    ).first;
+    const size_t min_guide_state_cost_index = std::distance(
+        guide_state_cost_batch.begin(),
+        std::min_element(
+            guide_state_cost_batch.begin(),
+            guide_state_cost_batch.end()
+        )
+    );
+    const ControlSequence svg_control_sequence = guide_smapling_pointer_->noised_control_sequence_batch_[
+        min_guide_state_cost_index
+    ]; // Stein Variational Guided
 
-    // // ----------------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------
 
-    // // covariance matrix for random_sampling from prior distribution
-    // ControlCovarianceMatrixSequence control_covariances_matrix_sequence = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
-    //     PREDICTION_HORIZON - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
-    // );
-    // for (auto& covariance : control_covariances_matrix_sequence) {
-    //     for (size_t i = 0; i < CONTROL_SPACE::dim; i++) {
-    //         covariance(i, i) = steering_control_covariance_for_gradient_estimation_[i];
-    //     }
-    // }
+    // covariance matrix for random_sampling from prior distribution
+    ControlCovarianceMatrixSequence control_covariances_matrix_sequence = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+        PREDICTION_HORIZON - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
+    );
+    for (auto& covariance : control_covariances_matrix_sequence) {
+        for (size_t i = 0; i < CONTROL_SPACE::dim; i++) {
+            covariance(i, i) = steering_control_covariance_for_gradient_estimation_[i];
+        }
+    }
 
-    // if (IS_COVARIANCE_ADAPTATION) {
-    //     // calculate softmax costs
-    //     const std::vector<double> softmax_costs = softmax(
-    //         costs_history,
-    //         GAUSSIAN_FITTING_LAMBDA,
-    //         THREAD_NUMBER
-    //     );
+    if (IS_COVARIANCE_ADAPTATION) {
+        // calculate softmax costs
+        const std::vector<double> softmax_costs = softmax(
+            costs_history,
+            GAUSSIAN_FITTING_LAMBDA,
+            THREAD_NUMBER
+        );
 
-    //     // calculate covariance using gaussian fitting
-    //     for (size_t i = 0; i < PREDICTION_HORIZON - 1; i++) {
-    //         // x-coordinate vector for gaussian_fitting
-    //         std::vector<double> steer_samples(control_sequence_history_.size());
-    //         // y-coordinate vector for gaussian_fitting
-    //         std::vector<double> q_star(softmax_costs.size());
+        // calculate covariance using gaussian fitting
+        for (size_t i = 0; i < PREDICTION_HORIZON - 1; i++) {
+            // x-coordinate vector for gaussian_fitting
+            std::vector<double> steer_samples(control_sequence_history_.size());
+            // y-coordinate vector for gaussian_fitting
+            std::vector<double> q_star(softmax_costs.size());
             
-    //         for (size_t j = 0; j < steer_samples.size(); j++) {
-    //             steer_samples[j] = control_sequence_history_[j](i, 0);
-    //             q_star[j] = softmax_costs[j];
-    //         }
+            for (size_t j = 0; j < steer_samples.size(); j++) {
+                steer_samples[j] = control_sequence_history_[j](i, 0);
+                q_star[j] = softmax_costs[j];
+            }
 
-    //         // Gaussian fitting
-    //         const double sigma = gaussian_fitting(
-    //             steer_samples,
-    //             q_star
-    //         ).second;
+            // Gaussian fitting
+            const double sigma = gaussian_fitting(
+                steer_samples,
+                q_star
+            ).second;
 
-    //         // clamping
-    //         const double sigma_clamped = std::clamp(
-    //             sigma,
-    //             MIN_STEERING_COVARIANCE,
-    //             MAX_STEERING_COVARIANCE
-    //         );
+            // clamping
+            const double sigma_clamped = std::clamp(
+                sigma,
+                MIN_STEERING_COVARIANCE,
+                MAX_STEERING_COVARIANCE
+            );
 
-    //         control_covariances_matrix_sequence[i] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * sigma_clamped;
-    //     }
-    // }
+            control_covariances_matrix_sequence[i] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * sigma_clamped;
+        }
+    }
 
-    // // random sampling from prior distribution
-    // prior_smapling_pointer_->random_sampling(previous_control_sequence_, control_covariances_matrix_sequence);
+    // random sampling from prior distribution
+    prior_smapling_pointer_->random_sampling(previous_control_sequence_, control_covariances_matrix_sequence);
 
-    // // Rollout samples and calculate costs
-    // auto [state_sequence_cost_batch, collision_cost_batch] = calculate_state_sequence_cost_batch(
-    //     *prior_smapling_pointer_,
-    //     initial_state,
-    //     local_cost_map_
-    // );
+    // Rollout samples and calculate costs
+    auto [state_sequence_cost_batch, collision_cost_batch] = calculate_state_sequence_cost_batch(
+        *prior_smapling_pointer_,
+        initial_state,
+        local_cost_map_
+    );
 
-    // // 어디에 사용될까?
-    // costs_ = std::forward<std::vector<double>>(state_sequence_cost_batch);
+    // 어디에 사용될까?
+    costs_ = std::forward<std::vector<double>>(state_sequence_cost_batch);
 
-    // // calculate weights
-    // if (IS_SVG) {
-    //     // with nominal sequence by SVG
-    //     nominal_control_sequence_ = svg_control_sequence;
-    // } else {
-    //     // without nominal sequence
-    //     nominal_control_sequence_ = Eigen::MatrixXd::Zero(
-    //         PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
-    //     );
-    // }
+    // calculate weights
+    if (IS_SVG) {
+        // with nominal sequence by SVG
+        nominal_control_sequence_ = svg_control_sequence;
+    } else {
+        // without nominal sequence
+        nominal_control_sequence_ = Eigen::MatrixXd::Zero(
+            PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
+        );
+    }
 
-    // const std::vector<double> weight_batch = softmax(
-    //     calculate_sample_cost_batch(
-    //         *prior_smapling_pointer_,
-    //         LAMBDA,
-    //         ALPHA,
-    //         costs_,
-    //         nominal_control_sequence_
-    //     ),
-    //     LAMBDA,
-    //     THREAD_NUMBER
-    // );
+    const std::vector<double> weight_batch = softmax(
+        calculate_sample_cost_batch(
+            *prior_smapling_pointer_,
+            LAMBDA,
+            ALPHA,
+            costs_,
+            nominal_control_sequence_
+        ),
+        LAMBDA,
+        THREAD_NUMBER
+    );
 
-    // // update next control sequence by expection (weighted sum)
-    // ControlSequence updated_control_sequence = Eigen::MatrixXd::Zero(PREDICTION_HORIZON - 1, CONTROL_SPACE::dim);
-    // for (size_t i = 0; i < prior_smapling_pointer_->get_sample_number(); i++) {
-    //     updated_control_sequence += weight_batch[i] * prior_smapling_pointer_->noised_control_sequence_batch_[i];
-    // }
+    // update next control sequence by expection (weighted sum)
+    ControlSequence updated_control_sequence = Eigen::MatrixXd::Zero(PREDICTION_HORIZON - 1, CONTROL_SPACE::dim);
+    for (size_t i = 0; i < prior_smapling_pointer_->get_sample_number(); i++) {
+        updated_control_sequence += weight_batch[i] * prior_smapling_pointer_->noised_control_sequence_batch_[i];
+    }
 
-    // // for collision rate
-    // const int collision_number = std::count_if(
-    //     collision_cost_batch.begin(),
-    //     collision_cost_batch.end(),
-    //     [](const double& cost) { return cost > 0.0; }
-    // );
-    // const double collision_rate = static_cast<double>(collision_number) / static_cast<double>(prior_smapling_pointer_->get_sample_number());
+    // for collision rate
+    const int collision_number = std::count_if(
+        collision_cost_batch.begin(),
+        collision_cost_batch.end(),
+        [](const double& cost) { return cost > 0.0; }
+    );
+    const double collision_rate = static_cast<double>(collision_number) / static_cast<double>(prior_smapling_pointer_->get_sample_number());
 
-    // // for warm start (biased-sampling)
-    // previous_control_sequence_ = updated_control_sequence;
+    // for warm start (biased-sampling)
+    previous_control_sequence_ = updated_control_sequence;
 
-    // return std::make_pair(updated_control_sequence, collision_rate);
-    return std::make_pair(previous_control_sequence_, 3.0);
+    return std::make_pair(updated_control_sequence, collision_rate);
 }
 
 StateSequence SVGMPPI::predict_state_sequence(

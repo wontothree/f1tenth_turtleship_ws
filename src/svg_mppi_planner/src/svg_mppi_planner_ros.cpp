@@ -11,16 +11,21 @@ SVGMPPIPlannerROS::SVGMPPIPlannerROS() : Node("svg_mppi_planner_node")
     local_cost_map_->setGeometry(grid_map::Length(gridLength, gridLength), resolution, grid_map::Position(0.0, 0.0));
     local_cost_map_->get("collision_layer").setConstant(0.0);
 
+    odometry_subscriber_ = this->create_subscription<nav_msgs::msg::Odometry>(
+        "ego_racecar/odom",
+        10,
+        std::bind(&SVGMPPIPlannerROS::odometry_callback, this, std::placeholders::_1)
+    );
+
     cost_map_subscriber_ = this->create_subscription<grid_map_msgs::msg::GridMap>(
         "cost_map",
         10, 
         std::bind(&SVGMPPIPlannerROS::local_cost_map_callback, this, std::placeholders::_1)
     );
 
-    odometry_subscriber_ = this->create_subscription<nav_msgs::msg::Odometry>(
-        "ego_racecar/odom",
-        10,
-        std::bind(&SVGMPPIPlannerROS::odometry_callback, this, std::placeholders::_1)
+    steering_publisher_ = this->create_publisher<ackermann_msgs::msg::AckermannDriveStamped>(
+        "drive",
+        10
     );
 
     marker_array_publisher_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
@@ -70,18 +75,27 @@ void SVGMPPIPlannerROS::timer_callback()
 
     const auto [updated_control_sequence, updated_collision_rate] = svg_mppi_pointer_->solve(initial_state);
 
-    // visualize_state_sequence(
-    //     svg_mppi_pointer_->state_sequence_batch_[0],
-    //     "state_sequence",
-    //     "r"
-    // );
+    const double current_steering = updated_control_sequence(0, CONTROL_SPACE::steering);
 
-    // std::vector<double> weight_batch = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-    // visualize_state_sequence_batch(
-    //     svg_mppi_pointer_->state_sequence_batch_,
-    //     weight_batch
-    // );
+    auto drive_msg = ackermann_msgs::msg::AckermannDriveStamped();
+    drive_msg.drive.speed = 1.0;
+    drive_msg.drive.steering_angle = current_steering;
+    steering_publisher_->publish(drive_msg);
 
+
+
+
+    visualize_state_sequence(
+        svg_mppi_pointer_->state_sequence_batch_[0],
+        "state_sequence",
+        "r"
+    );
+
+    std::vector<double> weight_batch(100, 1.0);
+    visualize_state_sequence_batch(
+        svg_mppi_pointer_->state_sequence_batch_,
+        weight_batch
+    );
 
     // // debeg
     // planning::StateSequenceBatch state_sequence_batch = {

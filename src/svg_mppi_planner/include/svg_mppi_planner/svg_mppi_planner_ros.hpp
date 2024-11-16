@@ -3,6 +3,7 @@
 #pragma once
 
 #include <grid_map_ros/grid_map_ros.hpp>
+#include "ackermann_msgs/msg/ackermann_drive_stamped.hpp"
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <geometry_msgs/msg/point.hpp>
@@ -32,14 +33,15 @@ private:
     std::unique_ptr<svg_mppi::planning::SVGMPPI> svg_mppi_pointer_;
 
     // subscribe
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_subscriber_;
     rclcpp::Subscription<grid_map_msgs::msg::GridMap>::SharedPtr cost_map_subscriber_;
 
     // publish
+    rclcpp::Publisher<ackermann_msgs::msg::AckermannDriveStamped>::SharedPtr steering_publisher_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_publisher_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_publisher_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr path_publisher_;
 
-    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_subscriber_;
     
 private:
     /**
