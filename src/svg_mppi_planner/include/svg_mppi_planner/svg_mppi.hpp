@@ -34,51 +34,58 @@ public:
     const double MAX_STEERING = 0.45;
     const double MIN_STEERING_COVARIANCE = 0.001;
     const double MAX_STEERING_COVARIANCE = 0.1;
-    const std::array<double, CONTROL_SPACE::dim> steering_control_covariance_for_gradient_estimation_ = {0.01};
 
     // Constant for SVGD
     const size_t GUIDE_SAMPLE_NUMBER = 1;
     const size_t SVGD_ITERATION_NUMBER = 3;
     const double SVGD_STEP_SIZE = 0.005;
-    const size_t SAMPLE_NUMBER_FOR_GRADIENT_ESTIMATION = 100;
+    const size_t SAMPLE_NUMBER_FOR_GRADIENT_ESTIMATION = 10; // shoud be = SAMPLE_NUMBER
+    const double SVG_LAMBDA = 3.0;
+    const size_t SAMPLE_BATCH_NUMBER = 100;
+    const bool IS_COVARIANCE_ADAPTATION = true;
+    const bool IS_SVG = true;
+    const std::array<double, CONTROL_SPACE::dim> steering_control_covariance_for_gradient_estimation_ = {0.01};
 
     // etc
     const int THREAD_NUMBER = 4;
-    const double grad_lambda_ = 3.0;
     const double gaussian_fitting_lambda_ = 0.1;
+    const double GAUSSIAN_FITTING_LAMBDA = 0.1;
     const double LAMBDA = 3.0;
     const double ALPHA = 0.1;
 
     // ----------------------------------------------------------------------------------------------------
 
-    std::unique_ptr<Sampling> guide_smaple_pointer_;
-    std::unique_ptr<Sampling> prior_smaple_pointer_;
+    // pointers
+    std::unique_ptr<Sampling> guide_smapling_pointer_;
+    std::unique_ptr<Sampling> prior_smapling_pointer_;
+    std::vector<std::shared_ptr<Sampling>> svg_sampling_pointer_;
 
     // called by function calculate_state_sequence_cost_batch, and used for visualization
     StateSequenceBatch state_sequence_batch_; // ***
 
-    // for approximate_gradient_log_likelihood
-    ControlSequenceBatch guide_noised_control_sequence_batch_;
-    ControlSequence previous_control_mean_sequence_;
+    // solve
+    std::vector<double> costs_; // ?
+    ControlSequence nominal_control_sequence_;
+
+    // warm start
+    ControlSequence previous_control_sequence_; // and for approximate_gradient_log_likelihood
 
     // local cost map
     grid_map::GridMap local_cost_map_;
-
-    // solve
-    std::vector<double> costs_;
-    ControlSequence nominal_control_sequence_;
 
 public:
     SVGMPPI();
     ~SVGMPPI() {};
 
-    // /**
-    //  * @brief
-    //  * @param initial_state 
-    //  */
-    // std::pair<ControlSequence, double> solve(
-    //     const State& initial_state
-    // );
+    /**
+     * @brief stein variational guided mppi solver
+     * @param initial_state
+     * @return update_control_sequence
+     * @return collision_rate
+     */
+    std::pair<ControlSequence, double> solve(
+        const State& initial_state
+    );
 
     /**
      * @brief set local cost map for planning
@@ -92,7 +99,6 @@ public:
     }
 
 private:
-
     /**
      * @brief predict state sequence using kinematic bicycle model
      * @param initial_state
@@ -117,7 +123,7 @@ private:
 
     /**
      * @brief calculate each state cost for all sample. always called after function random_sampling
-     * @param sample_pointer
+     * @param sampling_pointer
      * @param initial_state
      * @param local_cost_map
      * 
@@ -126,9 +132,10 @@ private:
      * 
      * used member variable
      * @note state_sequence_batch_
+     * @note sampling_pointer.noised_control_sequence_batch_
      */
     std::pair<std::vector<double>, std::vector<double>> calculate_state_sequence_cost_batch(
-        const Sampling& sample_pointer,
+        const Sampling& sampling_pointer,
         const State& initial_state,
         const grid_map::GridMap& local_cost_map
     );
@@ -142,12 +149,12 @@ private:
      * @return A vector of weights for each trajectory
      * 
      * used member variable of class Sampling
-     * @note control_mean_sequence_
-     * @note control_inverse_covariance_matrix_sequence_
-     * @note noised_control_sequence_batch_
+     * @note sampling_pointer.control_mean_sequence_
+     * @note sampling_pointer.control_inverse_covariance_matrix_sequence_
+     * @note sampling_pointer.noised_control_sequence_batch_
      */
     std::vector<double> calculate_sample_cost_batch(
-        const Sampling& sample_pointer,
+        const Sampling& sampling_pointer,
         const double& lambda,
         const double& alpha,
         const std::vector<double> state_cost_batch,
@@ -158,37 +165,41 @@ private:
 
 
 
-    // /**
-    //  * @brief calculate gradient batch
-    //  * @param initial_state for function approximate_gradient_log_likelihood
-    //  */
-    // ControlSequenceBatch approximate_gradient_log_posterior_batch(
-    //     const State& initial_state
-    // );
+    /**
+     * @brief calculate gradient batch
+     * @param sampling_pointer
+     * @param initial_state for function approximate_gradient_log_likelihood
+     */
+    ControlSequenceBatch approximate_gradient_log_posterior_batch(
+        const Sampling& sampling_pointer,
+        const State& initial_state
+    );
 
-    // /**
-    //  * @brief calculate one gradient
-    //  * @param initial_state for function calculate_state_sequence_cost_batch
-    //  * @param reference_control_sequence for function random_sampling
-    //  * @param control_inverse_covariance_sequence
-    //  * 
-    //  * update member variable
-    //  * @note noise_sequence_batch_ in random_sampling
-    //  * @note noised_control_sequence_batch_ in random_sampling
-    //  * @note control_mean_sequence_ in random_sampling
-    //  * @note control_covariance_matrix_sequence_ in random_sampling
-    //  * @note control_inverse_covariance_matrix_sequence_ in random_sampling
-    //  * 
-    //  * used member variable
-    //  * @note previous_control_mean_sequence_
-    //  * @note noised_control_sequence_batch_
-    //  * @note control_inverse_covariance_matrix_sequence_
-    //  */
-    // ControlSequence approximate_gradient_log_likelihood(
-    //     const State& initial_state,
-    //     const ControlSequence& reference_control_sequence,
-    //     const ControlCovarianceMatrixSequence& control_inverse_covariance_matrix_sequence
-    // );
+    /**
+     * @brief calculate one gradient
+     * @param sampling_pointer pointer
+     * @param initial_state for function calculate_state_sequence_cost_batch
+     * @param reference_control_sequence for function random_sampling
+     * @param control_inverse_covariance_sequence used in
+     * 
+     * update member variable
+     * @note noise_sequence_batch_ in random_sampling
+     * @note noised_control_sequence_batch_ in random_sampling
+     * @note control_mean_sequence_ in random_sampling
+     * @note control_covariance_matrix_sequence_ in random_sampling
+     * @note control_inverse_covariance_matrix_sequence_ in random_sampling
+     * 
+     * used member variable
+     * @note previous_control_sequence_
+     * @note noised_control_sequence_batch_
+     * @note control_inverse_covariance_matrix_sequence_
+     */
+    ControlSequence approximate_gradient_log_likelihood(
+        Sampling* sampling_pointer,
+        const State& initial_state,
+        const ControlSequence& reference_control_sequence,
+        const ControlCovarianceMatrixSequence& control_inverse_covariance_matrix_sequence
+    );
 
     /**
      * @brief Calculate the softmax of the given costs.
@@ -224,6 +235,8 @@ private:
 
     /**
      * @brief Gaussian fitting
+     * @param x x-coordinate vector
+     * @param y y-coordinate vector
      */
     std::pair<double, double> gaussian_fitting(
         const std::vector<double>& x,
@@ -282,147 +295,125 @@ private:
         const State& initial_state
     )
     {
-        // State state_tmp_;
-        // state_tmp_ << 0.0, 0.0, 0.0, 1.0, 0.1;
-        // std::cout << "state_tmp_" << std::endl;
-        // std::cout << state_tmp_ << std::endl;
-
-
-        // ControlSequence control_mean_trajectory_tmp_ = Eigen::MatrixXd::Zero(
-        //     prediction_horizon_ - 1, CONTROL_SPACE::dim
-        // );
-        // control_mean_trajectory_tmp_ << 0.1, 0.2, 0.3;
-        // std::cout << "control_mean_trajectory_tmp_" << std::endl;
-        // std::cout << control_mean_trajectory_tmp_ << std::endl;
-
-        // predict_state_sequence(state_tmp_, control_mean_trajectory_tmp_);
-
-        // solve(state_tmp_);
-
-        // std::cout << "Updated Control Sequence:" << std::endl;
-        // std::cout << updated_control_sequence_ << std::endl;
-
-        // std::cout << "Collision Rate:" << std::endl;
-        // std::cout << collision_rate_ << std::endl;
-
-        // ----------------------------------------------------------------------------------------------------
-
-        // function approximate_gradient_log_posterior_batch
-        // State state_tmp_;
-        // state_tmp_ << 0.0, 0.0, 0.0, 1.0, 0.1;
-        // std::cout << "state_tmp_" << std::endl;
-        // std::cout << state_tmp_ << std::endl;
-
-        // auto a = approximate_gradient_log_posterior_batch(state_tmp_);
-
-        // std::cout << a << std::endl;
-
         // ----------------------------------------------------------------------------------------------------
 
         // // test function random_sampling
 
-        // // control sequence
-        // ControlSequence control_mean_sequence_tmp_ = Eigen::MatrixXd::Zero(
-        //     PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
-        // );
-        // control_mean_sequence_tmp_ << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-        // std::cout << "control_mean_sequence_tmp_" << std::endl;
-        // std::cout << control_mean_sequence_tmp_ << std::endl;
+        // control sequence
+        ControlSequence reference_control_sequence_tmp = Eigen::MatrixXd::Zero(
+            15 - 1, CONTROL_SPACE::dim
+        );
+        reference_control_sequence_tmp << 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
+        // std::cout << "reference_control_sequence_tmp" << std::endl;
+        // std::cout << reference_control_sequence_tmp << std::endl;
 
-        // ControlCovarianceMatrixSequence control_covariance_matrix_sequence_tmp = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
-        //     PREDICTION_HORIZON - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
-        // );
-        // control_covariance_matrix_sequence_tmp[0] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_matrix_sequence_tmp[1] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_matrix_sequence_tmp[2] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_matrix_sequence_tmp[3] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_matrix_sequence_tmp[4] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_matrix_sequence_tmp[5] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_matrix_sequence_tmp[6] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_matrix_sequence_tmp[7] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // control_covariance_matrix_sequence_tmp[8] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
-        // std::cout << "control_covariance_matrix_sequence_tmp" << std::endl;
-        // std::cout << control_covariance_matrix_sequence_tmp[0] << std::endl;
-        // std::cout << control_covariance_matrix_sequence_tmp[1] << std::endl;
-        // std::cout << control_covariance_matrix_sequence_tmp[2] << std::endl;
-        // std::cout << control_covariance_matrix_sequence_tmp[3] << std::endl;
-        // std::cout << control_covariance_matrix_sequence_tmp[4] << std::endl;
-        // std::cout << control_covariance_matrix_sequence_tmp[5] << std::endl;
-        // std::cout << control_covariance_matrix_sequence_tmp[6] << std::endl;
-        // std::cout << control_covariance_matrix_sequence_tmp[7] << std::endl;
-        // std::cout << control_covariance_matrix_sequence_tmp[8] << std::endl;
+        // control covariance matrix 
+        ControlCovarianceMatrixSequence reference_control_covariance_matrix_sequence_tmp = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+            PREDICTION_HORIZON - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
+        );
+        reference_control_covariance_matrix_sequence_tmp[0] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[1] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[2] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[3] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[4] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[5] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[6] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[7] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[8] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[9] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[10] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[11] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[12] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        reference_control_covariance_matrix_sequence_tmp[13] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * 1.0;
+        // std::cout << "reference_control_covariance_matrix_sequence_tmp" << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[0] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[1] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[2] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[3] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[4] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[5] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[6] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[7] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[8] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[9] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[10] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[11] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[12] << std::endl;
+        // std::cout << reference_control_covariance_matrix_sequence_tmp[13] << std::endl;
 
         // // before
 
         // // print member variable normal_distribution_pointer_
         // std::cout << "normal_distribution_pointer_\n";
-        // for (size_t i = 0; i < normal_distribution_pointer_->size(); i++) {
+        // for (size_t i = 0; i < prior_smapling_pointer_->normal_distribution_pointer_->size(); i++) {
         //     for (size_t j = 0; j < CONTROL_SPACE::dim; j++) {
         //         std::cout 
-        //             << (*normal_distribution_pointer_)[i][j].mean()
+        //             << (*prior_smapling_pointer_->normal_distribution_pointer_)[i][j].mean()
         //             << ", "
-        //             << (*normal_distribution_pointer_)[i][j].stddev()
+        //             << (*prior_smapling_pointer_->normal_distribution_pointer_)[i][j].stddev()
         //             << std::endl;
         //     }
         // }
 
         // // print noise_sequence_batch_
         // std::cout << "noise_sequence_batch_:\n";
-        // for (size_t i = 0; i < noise_sequence_batch_.size(); ++i) {
-        //     std::cout << noise_sequence_batch_[i] << "\n";
+        // for (size_t i = 0; i < prior_smapling_pointer_->noise_sequence_batch_.size(); ++i) {
+        //     std::cout << prior_smapling_pointer_->noise_sequence_batch_[i] << "\n";
         // }
 
         // // print noised_control_sequence_batch_
         // std::cout << "noised_control_sequence_batch_:\n";
-        // for (size_t i = 0; i < noised_control_sequence_batch_.size(); ++i) {
-        //     std::cout << noised_control_sequence_batch_[i] << "\n";
+        // for (size_t i = 0; i < prior_smapling_pointer_->noised_control_sequence_batch_.size(); ++i) {
+        //     std::cout << prior_smapling_pointer_->noised_control_sequence_batch_[i] << "\n";
         // }
 
-        // random_sampling(control_mean_sequence_tmp_, control_covariance_matrix_sequence_tmp);
+        // prior_smapling_pointer_->random_sampling(reference_control_sequence_tmp, reference_control_covariance_matrix_sequence_tmp);
 
         // // after
 
-        // // print noise_sequence_batch_
+        // // print member variable normal_distribution_pointer_
         // std::cout << "normal_distribution_pointer_\n";
-        // for (size_t i = 0; i < normal_distribution_pointer_->size(); i++) {
+        // for (size_t i = 0; i < prior_smapling_pointer_->normal_distribution_pointer_->size(); i++) {
         //     for (size_t j = 0; j < CONTROL_SPACE::dim; j++) {
         //         std::cout 
-        //             << (*normal_distribution_pointer_)[i][j].mean()
+        //             << (*prior_smapling_pointer_->normal_distribution_pointer_)[i][j].mean()
         //             << ", "
-        //             << (*normal_distribution_pointer_)[i][j].stddev()
+        //             << (*prior_smapling_pointer_->normal_distribution_pointer_)[i][j].stddev()
         //             << std::endl;
         //     }
         // }
 
-        // // print noise_sample_trajectory_batch_
+        // // print noise_sequence_batch_
         // std::cout << "noise_sequence_batch_:\n";
-        // for (size_t i = 0; i < noise_sequence_batch_.size(); ++i) {
-        //     std::cout << noise_sequence_batch_[i] << "\n";
+        // for (size_t i = 0; i < prior_smapling_pointer_->noise_sequence_batch_.size(); ++i) {
+        //     std::cout << prior_smapling_pointer_->noise_sequence_batch_[i] << "\n";
         // }
 
-        // print noised_control_sequence_batch_
+        // // print noised_control_sequence_batch_
         // std::cout << "noised_control_sequence_batch_:\n";
-        // for (size_t i = 0; i < noised_control_sequence_batch_.size(); ++i) {
-        //     std::cout << noised_control_sequence_batch_[i] << "\n";
+        // for (size_t i = 0; i < prior_smapling_pointer_->noised_control_sequence_batch_.size(); ++i) {
+        //     std::cout << prior_smapling_pointer_->noised_control_sequence_batch_[i] << "\n";
         // }
 
         // ----------------------------------------------------------------------------------------------------
 
         // // test function predict_state_sequence & calculate_state_sequence_cost
 
-        // State state_tmp;
-        // state_tmp << 0.0, 0.0, 0.0, 1.0, 0.0;
-        // std::cout << "state_tmp" << std::endl;
-        // std::cout << state_tmp << std::endl;
+        // State initial_state_tmp;
+        // initial_state_tmp << 0.0, 0.0, 0.0, 1.0, 0.0;
+        // std::cout << "initial_state_tmp" << std::endl;
+        // std::cout << initial_state_tmp << std::endl;
 
         // ControlSequence control_sequence_tmp = Eigen::MatrixXd::Zero(
         //     PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
         // );
-        // control_sequence_tmp << 0.586023, -2.0311, 0.250938, 0.895655, -1.02602, 0.679724, 1.66303, 0.397099, 0.377119;
+        // control_sequence_tmp << 0.586023, -2.0311, 0.250938, 0.895655, -1.02602, 0.679724, 1.66303, 0.397099, 0.377119, -0.45, -0.45, 0.45, 0.45, -0.45;
         // std::cout << "control_sequence_tmp" << std::endl;
         // std::cout << control_sequence_tmp << std::endl;
 
-        // StateSequence predicted_state_sequence = predict_state_sequence(state_tmp, control_sequence_tmp);
+        // StateSequence predicted_state_sequence = predict_state_sequence(
+        //     initial_state_tmp, control_sequence_tmp
+        // );
 
         // std::cout << "predicted_state_sequence" << std::endl;
         // std::cout << predicted_state_sequence << std::endl;
@@ -439,26 +430,27 @@ private:
         // );
 
         // std::cout << state_squence_cost_sum1 << std::endl;
-    
-        
+
         // ----------------------------------------------------------------------------------------------------
 
-        // test calculate_state_sequence_cost_batch & calculate_sample_cost_batch
+        // // test calculate_state_sequence_cost_batch & calculate_sample_cost_batch
 
-        // const auto [total_cost_batch, collision_cost_batch] = calculate_state_sequence_cost_batch(
+        // const auto [state_sequence_cost_batch, collision_cost_batch] = calculate_state_sequence_cost_batch(
+        //     *prior_smapling_pointer_,
         //     initial_state,
         //     local_cost_map_
         // );
 
-        // for (const auto& cost : total_cost_batch) {
+        // for (const auto& cost : state_sequence_cost_batch) {
         //     std::cout << cost << " ";
         // }
         // std::cout << std::endl;
 
         // const auto sample_cost_batch = calculate_sample_cost_batch(
+        //     *prior_smapling_pointer_,
         //     LAMBDA,
         //     ALPHA,
-        //     total_cost_batch,
+        //     state_sequence_cost_batch,
         //     nominal_control_sequence_
         // );
 
@@ -468,9 +460,37 @@ private:
         // std::cout << std::endl;
 
         // ----------------------------------------------------------------------------------------------------
-    }
-};
 
+        // function approximate_gradient_log_likelihood
+
+        // if (!svg_sampling_pointer_.at(0)) {
+        //     throw std::runtime_error("svg_sampling_pointer_.at(0) is null!");
+        // }
+
+        // if (!prior_smapling_pointer_) {
+        //     throw std::runtime_error("prior_smapling_pointer_ is null!");
+        // }
+
+        // approximate_gradient_log_likelihood(
+        //     svg_sampling_pointer_.at(0).get(),
+        //     initial_state,
+        //     prior_smapling_pointer_->noised_control_sequence_batch_[0],
+        //     reference_control_covariance_matrix_sequence_tmp
+        // );
+
+        // ----------------------------------------------------------------------------------------------------
+
+        // function approximate_gradient_log_posterior_batch
+
+        // approximate_gradient_log_posterior_batch(
+        //     *guide_smapling_pointer_,
+        //     initial_state
+        // );
+
+        // ----------------------------------------------------------------------------------------------------
+    }
+
+};
 
 } // namespace planning
 } // namespace svg_mppi
