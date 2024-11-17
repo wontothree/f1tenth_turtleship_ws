@@ -77,12 +77,9 @@ void SVGMPPIPlannerROS::timer_callback()
     const double current_steering = updated_control_sequence(0, CONTROL_SPACE::steering);
 
     auto drive_msg = ackermann_msgs::msg::AckermannDriveStamped();
-    drive_msg.drive.speed = 0.7;
+    drive_msg.drive.speed = 0.5;
     drive_msg.drive.steering_angle = current_steering;
     steering_publisher_->publish(drive_msg);
-
-
-
 
     visualize_state_sequence(
         svg_mppi_pointer_->state_sequence_batch_[0],
@@ -90,7 +87,7 @@ void SVGMPPIPlannerROS::timer_callback()
         "r"
     );
 
-    std::vector<double> weight_batch(200, 10.0);
+    std::vector<double> weight_batch(400, 10.0);
     visualize_state_sequence_batch(
         svg_mppi_pointer_->state_sequence_batch_,
         weight_batch

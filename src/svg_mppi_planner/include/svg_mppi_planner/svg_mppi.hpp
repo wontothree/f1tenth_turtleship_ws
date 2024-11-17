@@ -19,17 +19,17 @@ public:
     // ----------------------------------------------------------------------------------------------------
 
     // Constant for MPPI
-    const size_t PREDICTION_HORIZON = 60;
+    const size_t PREDICTION_HORIZON = 40;
     const double PREDICTION_INTERVAL = 0.05; // s
-    const size_t SAMPLE_BATCH_NUMBER = 200; // ????
+    const size_t SAMPLE_BATCH_NUMBER = 400; // ????
     const double NON_BIASED_SAMPLING_RATE = 0.1;
-    const double COLLISION_WEIGHT = 30.0; // original : 1.0
+    const double COLLISION_WEIGHT = 70.0; // original : 1.0
 
     // Constant for F1/10 vehicle
     const double L_F = 0.189;
     const double L_R = 0.135;
-    const double MIN_STEERING = -0.45;
-    const double MAX_STEERING = 0.45;
+    const double MIN_STEERING = -0.65; // original -9.45
+    const double MAX_STEERING = 0.65;  // original 0.45
     const double MIN_STEERING_COVARIANCE = 0.001;
     const double MAX_STEERING_COVARIANCE = 1.0; // original : 0.1
 
@@ -37,16 +37,16 @@ public:
     const size_t GUIDE_SAMPLE_NUMBER = 1;
     const size_t SVGD_ITERATION_NUMBER = 10;
     const double SVGD_STEP_SIZE = 0.005;
-    const size_t SAMPLE_NUMBER_FOR_GRADIENT_ESTIMATION = 200; // shoud be = SAMPLE_BATCH_NUMBER
+    const size_t SAMPLE_NUMBER_FOR_GRADIENT_ESTIMATION = 400; // shoud be = SAMPLE_BATCH_NUMBER
     const double SVG_LAMBDA = 3.0;
     const bool IS_COVARIANCE_ADAPTATION = false; // original : true
-    const bool IS_SVG = true;
+    const bool IS_SVG = false;
     
-    const std::array<double, CONTROL_SPACE::dim> STERRING_CONTROL_COVARIANCE = {100.0};
+    const std::array<double, CONTROL_SPACE::dim> STERRING_CONTROL_COVARIANCE = {1.0};
     const std::array<double, CONTROL_SPACE::dim> steering_control_covariance_for_gradient_estimation_ = {0.01};
 
     // etc
-    const int THREAD_NUMBER = 4;
+    const int THREAD_NUMBER = 8;
     const double GAUSSIAN_FITTING_LAMBDA = 0.1;
     const double LAMBDA = 3.0;
     const double ALPHA = 0.1;

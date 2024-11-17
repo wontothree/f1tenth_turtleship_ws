@@ -147,15 +147,12 @@ std::pair<ControlSequence, double> SVGMPPI::solve(
                 q_star
             ).second;
 
-            // // clamping
-            // const double sigma_clamped = std::clamp(
-            //     sigma,
-            //     MIN_STEERING_COVARIANCE,
-            //     MAX_STEERING_COVARIANCE
-            // );
-
-            // test
-            const double sigma_clamped = sigma;
+            // clamping
+            const double sigma_clamped = std::clamp(
+                sigma,
+                MIN_STEERING_COVARIANCE,
+                MAX_STEERING_COVARIANCE
+            );
 
             adaptive_control_covariances_matrix_sequence[i] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * sigma_clamped;
         }
@@ -182,9 +179,9 @@ std::pair<ControlSequence, double> SVGMPPI::solve(
         nominal_control_sequence_ = svg_control_sequence;
     } else {
         // without nominal sequence
-        nominal_control_sequence_ = Eigen::MatrixXd::Zero(
-            PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
-        );
+        // nominal_control_sequence_ = Eigen::MatrixXd::Zero(
+        //     PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
+        // );
     }
 
     const std::vector<double> weight_batch = softmax(

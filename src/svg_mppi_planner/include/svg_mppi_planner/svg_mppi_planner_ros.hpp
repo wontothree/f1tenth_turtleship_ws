@@ -29,7 +29,6 @@ private:
     const int timer_period = 10;                                  // timer period (ms)
 
 private:
-
     std::unique_ptr<svg_mppi::planning::SVGMPPI> svg_mppi_pointer_;
 
     // subscribe
@@ -42,7 +41,6 @@ private:
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_publisher_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr path_publisher_;
 
-    
 private:
     /**
      * @brief This function is called in constant period of timer
