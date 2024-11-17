@@ -179,9 +179,9 @@ std::pair<ControlSequence, double> SVGMPPI::solve(
         nominal_control_sequence_ = svg_control_sequence;
     } else {
         // without nominal sequence
-        // nominal_control_sequence_ = Eigen::MatrixXd::Zero(
-        //     PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
-        // );
+        nominal_control_sequence_ = Eigen::MatrixXd::Zero(
+            PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
+        );
     }
 
     const std::vector<double> weight_batch = softmax(
@@ -212,6 +212,8 @@ std::pair<ControlSequence, double> SVGMPPI::solve(
 
     // for warm start (biased-sampling)
     previous_control_sequence_ = updated_control_sequence;
+
+    std::cout << previous_control_sequence_ << std::endl;
 
     return std::make_pair(updated_control_sequence, collision_rate);
 }

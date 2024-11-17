@@ -21,7 +21,7 @@ public:
     // Constant for MPPI
     const size_t PREDICTION_HORIZON = 40;
     const double PREDICTION_INTERVAL = 0.05; // s
-    const size_t SAMPLE_BATCH_NUMBER = 400; // ????
+    const size_t SAMPLE_BATCH_NUMBER = 400;
     const double NON_BIASED_SAMPLING_RATE = 0.1;
     const double COLLISION_WEIGHT = 70.0; // original : 1.0
 
