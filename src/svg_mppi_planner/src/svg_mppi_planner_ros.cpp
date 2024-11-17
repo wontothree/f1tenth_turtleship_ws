@@ -65,7 +65,7 @@ void SVGMPPIPlannerROS::timer_callback()
     // steer observer
 
     // svg mppi solve
-    svg_mppi::planning::State initial_state = svg_mppi::planning::State::Zero();
+    planning::State initial_state = planning::State::Zero();
     initial_state[STATE_SPACE::x] = robot_state_.x;
     initial_state[STATE_SPACE::y] = robot_state_.y;
     initial_state[STATE_SPACE::yaw] = robot_state_.yaw;
@@ -77,21 +77,27 @@ void SVGMPPIPlannerROS::timer_callback()
     const double current_steering = updated_control_sequence(0, CONTROL_SPACE::steering);
 
     auto drive_msg = ackermann_msgs::msg::AckermannDriveStamped();
-    drive_msg.drive.speed = 3.0;
+    drive_msg.drive.speed = 1.0;
     drive_msg.drive.steering_angle = current_steering;
     steering_publisher_->publish(drive_msg);
 
-    // visualize_state_sequence(
-    //     svg_mppi_pointer_->previous_control_sequence_,
-    //     "state_sequence",
-    //     "r"
-    // );
+    // visualize
+    const planning::StateSequence optimized_state_sequence = svg_mppi_pointer_->get_predicted_state_sequence(
+        initial_state,
+        updated_control_sequence
+    );
+    visualize_state_sequence(
+        optimized_state_sequence,
+        "state_sequence",
+        "r"
+    );
 
-    std::vector<double> weight_batch(400, 1.0);
+    // std::vector<double> weight_batch(400, 1.0);
     visualize_state_sequence_batch(
         svg_mppi_pointer_->state_sequence_batch_,
-        weight_batch
+        svg_mppi_pointer_->weight_batch_
     );
+
 
     // // debeg
     // planning::StateSequenceBatch state_sequence_batch = {

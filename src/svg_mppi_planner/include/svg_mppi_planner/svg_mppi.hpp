@@ -18,18 +18,22 @@ class SVGMPPI {
 public:
     // ----------------------------------------------------------------------------------------------------
 
+    // Constant for planning mode
+    const bool IS_COVARIANCE_ADAPTATION = false; // original : true
+    const bool IS_SVG = false;
+
     // Constant for MPPI
-    const size_t PREDICTION_HORIZON = 40;
+    const size_t PREDICTION_HORIZON = 30;
     const double PREDICTION_INTERVAL = 0.05; // s
     const size_t SAMPLE_BATCH_NUMBER = 400;
     const double NON_BIASED_SAMPLING_RATE = 0.1;
-    const double COLLISION_WEIGHT = 70.0; // original : 1.0
+    const double COLLISION_WEIGHT = 1000.0; // original : 1.0
 
     // Constant for F1/10 vehicle
     const double L_F = 0.189;
     const double L_R = 0.135;
-    const double MIN_STEERING = -0.65; // original -9.45
-    const double MAX_STEERING = 0.65;  // original 0.45
+    const double MIN_STEERING = -0.45; // original -0.45
+    const double MAX_STEERING = 0.45;  // original 0.45
     const double MIN_STEERING_COVARIANCE = 0.001;
     const double MAX_STEERING_COVARIANCE = 1.0; // original : 0.1
 
@@ -39,10 +43,8 @@ public:
     const double SVGD_STEP_SIZE = 0.005;
     const size_t SAMPLE_NUMBER_FOR_GRADIENT_ESTIMATION = 400; // shoud be = SAMPLE_BATCH_NUMBER
     const double SVG_LAMBDA = 3.0;
-    const bool IS_COVARIANCE_ADAPTATION = false; // original : true
-    const bool IS_SVG = false;
     
-    const std::array<double, CONTROL_SPACE::dim> STERRING_CONTROL_COVARIANCE = {1.0};
+    const std::array<double, CONTROL_SPACE::dim> STERRING_CONTROL_COVARIANCE = {10.0};
     const std::array<double, CONTROL_SPACE::dim> steering_control_covariance_for_gradient_estimation_ = {0.01};
 
     // etc
@@ -62,11 +64,9 @@ public:
     StateSequenceBatch state_sequence_batch_; // ***
 
     // solve
-    std::vector<double> costs_; // ?
     ControlSequence nominal_control_sequence_;
-
-    // warm start
-    ControlSequence previous_control_sequence_; // and for approximate_gradient_log_likelihood
+    ControlSequence previous_control_sequence_; // for warm start and for approximate_gradient_log_likelihood
+    std::vector<double> weight_batch_;
 
     // local cost map
     grid_map::GridMap local_cost_map_;
@@ -94,6 +94,24 @@ public:
     )
     {
         local_cost_map_ = local_cost_map;
+    }
+
+    /**
+     * @brief get predicted state sequence
+     * @param initial_state
+     * @param control_sequence
+     */
+    StateSequence get_predicted_state_sequence(
+        const State& initial_state,
+        const ControlSequence& control_sequence
+    )
+    {
+        const StateSequence predicted_state_sequence = predict_state_sequence(
+            initial_state,
+            control_sequence
+        );
+
+        return predicted_state_sequence;
     }
 
 private:

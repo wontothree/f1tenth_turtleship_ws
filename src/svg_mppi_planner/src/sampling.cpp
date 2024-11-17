@@ -92,16 +92,16 @@ void Sampling::random_sampling(
             noised_control_sequence_batch_[i] = noise_sequence_batch_[i];
         }
 
-        // clip input with control input constraints
-        for (size_t j = 0; j < CONTROL_SPACE::dim; j++) {
-            for (size_t k = 0; k < PREDICTION_HORIZON - 1; k++) {
-                noised_control_sequence_batch_[i](k, j) = std::clamp(
-                    noised_control_sequence_batch_[i](k, j),
-                    min_control_[j],
-                    max_control_[j]
-                );
-            }
-        }
+        // // clip input with control input constraints
+        // for (size_t j = 0; j < CONTROL_SPACE::dim; j++) {
+        //     for (size_t k = 0; k < PREDICTION_HORIZON - 1; k++) {
+        //         noised_control_sequence_batch_[i](k, j) = std::clamp(
+        //             noised_control_sequence_batch_[i](k, j),
+        //             min_control_[j],
+        //             max_control_[j]
+        //         );
+        //     }
+        // }
     }
 }
 
