@@ -55,7 +55,7 @@ private:
      * @brief called whenever be subscribed by local cost map
      * @param local_cost_map
      */
-    bool is_local_cost_map_received_;
+    bool is_local_cost_map_received_ = false;
     grid_map::GridMap* local_cost_map_;
     void local_cost_map_callback(
         const grid_map_msgs::msg::GridMap::SharedPtr local_cost_map
@@ -72,7 +72,7 @@ private:
         double steering = 0.0;
     };
     RobotState robot_state_;
-    bool is_odometry_received_;
+    bool is_odometry_received_ = false;
     void odometry_callback(
         const nav_msgs::msg::Odometry::SharedPtr odometry
     );

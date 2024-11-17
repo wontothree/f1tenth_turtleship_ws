@@ -18,6 +18,22 @@ Sampling::Sampling(
    MAX_STEERING(max_control),
    THREAD_NUMBER(thread_number)
 {
+    noise_sequence_batch_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+        SAMPLE_NUMBER, Eigen::MatrixXd::Zero(PREDICTION_HORIZON - 1, CONTROL_SPACE::dim)
+    );
+    noised_control_sequence_batch_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+        SAMPLE_NUMBER, Eigen::MatrixXd::Zero(PREDICTION_HORIZON - 1, CONTROL_SPACE::dim)
+    );
+    control_mean_sequence_ = Eigen::MatrixXd::Zero(
+        PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
+    );
+    control_covariance_matrix_sequence_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+        PREDICTION_HORIZON - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
+    );
+    control_inverse_covariance_matrix_sequence_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
+        PREDICTION_HORIZON - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
+    );
+
     // initialize random number generator
     for (int i = 0; i < THREAD_NUMBER; i++) {
         random_number_generators_.push_back(std::mt19937(std::random_device{}()));
@@ -34,22 +50,6 @@ Sampling::Sampling(
         }
         (*normal_distribution_pointer_).push_back(normal_distributions_);
     }
-
-    noise_sequence_batch_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
-        SAMPLE_NUMBER, Eigen::MatrixXd::Zero(PREDICTION_HORIZON - 1, CONTROL_SPACE::dim)
-    );
-    noised_control_sequence_batch_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
-        SAMPLE_NUMBER, Eigen::MatrixXd::Zero(PREDICTION_HORIZON - 1, CONTROL_SPACE::dim)
-    );
-    control_mean_sequence_ = Eigen::MatrixXd::Zero(
-        PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
-    );
-    control_covariance_matrix_sequence_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
-        PREDICTION_HORIZON - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
-    );
-    control_inverse_covariance_matrix_sequence_ = std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>>(
-        PREDICTION_HORIZON - 1, Eigen::MatrixXd::Zero(CONTROL_SPACE::dim, CONTROL_SPACE::dim)
-    );
 }
 
 void Sampling::random_sampling(
@@ -92,16 +92,16 @@ void Sampling::random_sampling(
             noised_control_sequence_batch_[i] = noise_sequence_batch_[i];
         }
 
-        // clip input with control input constraints
-        for (size_t j = 0; j < CONTROL_SPACE::dim; j++) {
-            for (size_t k = 0; k < PREDICTION_HORIZON - 1; k++) {
-                noised_control_sequence_batch_[i](k, j) = std::clamp(
-                    noised_control_sequence_batch_[i](k, j),
-                    min_control_[j],
-                    max_control_[j]
-                );
-            }
-        }
+        // // clip input with control input constraints
+        // for (size_t j = 0; j < CONTROL_SPACE::dim; j++) {
+        //     for (size_t k = 0; k < PREDICTION_HORIZON - 1; k++) {
+        //         noised_control_sequence_batch_[i](k, j) = std::clamp(
+        //             noised_control_sequence_batch_[i](k, j),
+        //             min_control_[j],
+        //             max_control_[j]
+        //         );
+        //     }
+        // }
     }
 }
 

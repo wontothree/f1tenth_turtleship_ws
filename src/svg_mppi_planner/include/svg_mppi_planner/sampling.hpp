@@ -15,6 +15,8 @@ class Sampling {
 private:
     // ----------------------------------------------------------------------------------------------------
     
+    // member constant
+
     const size_t SAMPLE_NUMBER;
     const double NON_BIASED_SAMPLING_RATE;
     const size_t PREDICTION_HORIZON;
