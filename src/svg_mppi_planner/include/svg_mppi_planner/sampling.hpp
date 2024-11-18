@@ -30,8 +30,6 @@ public:
     // for random_sampling
     std::vector<std::mt19937> random_number_generators_;
     std::unique_ptr<std::vector<std::array<std::normal_distribution<>, CONTROL_SPACE::dim>>> normal_distribution_pointer_;
-    const std::array<double, CONTROL_SPACE::dim> max_control_ = {MAX_STEERING};
-    const std::array<double, CONTROL_SPACE::dim> min_control_ = {MIN_STEERING};
     ControlSequence control_mean_sequence_;
     ControlCovarianceMatrixSequence control_covariance_matrix_sequence_;
     ControlCovarianceMatrixSequence control_inverse_covariance_matrix_sequence_;

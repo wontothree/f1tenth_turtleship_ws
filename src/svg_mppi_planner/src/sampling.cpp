@@ -97,8 +97,8 @@ void Sampling::random_sampling(
             for (size_t k = 0; k < PREDICTION_HORIZON - 1; k++) {
                 noised_control_sequence_batch_[i](k, j) = std::clamp(
                     noised_control_sequence_batch_[i](k, j),
-                    min_control_[j],
-                    max_control_[j]
+                    MIN_STEERING[j],
+                    MAX_STEERING[j]
                 );
             }
         }

@@ -153,6 +153,19 @@ std::pair<ControlSequence, double> SVGMPPI::solve(
         }
     }
 
+    if (IS_SVG) {
+        // with nominal sequence by SVG
+        nominal_control_sequence_ = svg_control_sequence;
+    } else {
+        // without nominal sequence
+        nominal_control_sequence_ = Eigen::MatrixXd::Zero(
+            PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
+        );
+    }    
+
+    // ----------------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------
     // important from now
 
     // random sampling from prior distribution
@@ -166,16 +179,6 @@ std::pair<ControlSequence, double> SVGMPPI::solve(
     );
 
     // calculate weights
-    if (IS_SVG) {
-        // with nominal sequence by SVG
-        nominal_control_sequence_ = svg_control_sequence;
-    } else {
-        // without nominal sequence
-        nominal_control_sequence_ = Eigen::MatrixXd::Zero(
-            PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
-        );
-    }
-
     const std::vector<double> weight_batch = softmax(
         calculate_sample_cost_batch(
             *prior_smapling_pointer_,
