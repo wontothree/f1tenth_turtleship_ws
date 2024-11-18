@@ -25,8 +25,8 @@ public:
     // Constant for MPPI
     const size_t PREDICTION_HORIZON = 30;
     const double PREDICTION_INTERVAL = 0.05; // s
-    const size_t SAMPLE_BATCH_NUMBER = 400;
-    const double NON_BIASED_SAMPLING_RATE = 0.1;
+    const size_t SAMPLE_BATCH_NUMBER = 200;
+    const double NON_BIASED_SAMPLING_RATE = 0.9;
     const double COLLISION_WEIGHT = 1000.0; // original : 1.0
 
     // Constant for F1/10 vehicle
@@ -41,7 +41,7 @@ public:
     const size_t GUIDE_SAMPLE_NUMBER = 1;
     const size_t SVGD_ITERATION_NUMBER = 10;
     const double SVGD_STEP_SIZE = 0.005;
-    const size_t SAMPLE_NUMBER_FOR_GRADIENT_ESTIMATION = 400; // shoud be = SAMPLE_BATCH_NUMBER
+    const size_t SAMPLE_NUMBER_FOR_GRADIENT_ESTIMATION = 200; // shoud be = SAMPLE_BATCH_NUMBER
     const double SVG_LAMBDA = 3.0;
     
     const std::array<double, CONTROL_SPACE::dim> STERRING_CONTROL_COVARIANCE = {10.0};
