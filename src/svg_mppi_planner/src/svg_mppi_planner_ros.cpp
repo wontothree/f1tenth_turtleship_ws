@@ -71,18 +71,8 @@ void SVGMPPIPlannerROS::timer_callback()
 
     // // steer observer
 
-    // // svg mppi solve
-    // svg_mppi::planning::State initial_state = svg_mppi::planning::State::Zero();
-    // initial_state[STATE_SPACE::x] = robot_state_.x;
-    // initial_state[STATE_SPACE::y] = robot_state_.y;
-    // initial_state[STATE_SPACE::yaw] = robot_state_.yaw;
-    // initial_state[STATE_SPACE::velocity] = robot_state_.velocity;
-    // initial_state[STATE_SPACE::steering] = robot_state_.steering;
-
-
-    // const auto [updated_control_sequence, updated_collision_rate] = svg_mppi_pointer_->solve(initial_state);
     // svg mppi solve
-    planning::State initial_state = planning::State::Zero();
+    svg_mppi::planning::State initial_state = svg_mppi::planning::State::Zero();
     initial_state[STATE_SPACE::x] = robot_state_.x;
     initial_state[STATE_SPACE::y] = robot_state_.y;
     initial_state[STATE_SPACE::yaw] = robot_state_.yaw;
@@ -90,16 +80,12 @@ void SVGMPPIPlannerROS::timer_callback()
     initial_state[STATE_SPACE::steering] = robot_state_.steering;
 
 
-    // const double current_steering = updated_control_sequence(0, CONTROL_SPACE::steering);
+    const auto [updated_control_sequence, updated_collision_rate] = svg_mppi_pointer_->solve( initial_state);
 
-    // auto drive_msg = ackermann_msgs::msg::AckermannDriveStamped();
-    // drive_msg.drive.speed = 0.7;
-    // drive_msg.drive.steering_angle = current_steering;
-    // steering_publisher_->publish(drive_msg);
-
+    const double current_steering = updated_control_sequence(0, CONTROL_SPACE::steering);
 
     auto drive_msg = ackermann_msgs::msg::AckermannDriveStamped();
-    drive_msg.drive.speed = 1.0;
+    drive_msg.drive.speed = 0.7;
     drive_msg.drive.steering_angle = current_steering;
     steering_publisher_->publish(drive_msg);
 
