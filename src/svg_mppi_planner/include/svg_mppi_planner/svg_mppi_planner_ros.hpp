@@ -43,8 +43,11 @@ private:
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_publisher_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr path_publisher_;
 
+<<<<<<< HEAD
     // real system
     // rclcpp::Subscription<Float64>::SharedPtr steering_subscriber_;
+=======
+>>>>>>> 2ce29b16f16e5da0681063a06e28cc27225a4d4c
 private:
     /**
      * @brief This function is called in constant period of timer

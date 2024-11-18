@@ -45,11 +45,6 @@ SVGMPPI::SVGMPPI()
     previous_control_sequence_ = Eigen::MatrixXd::Zero(
         PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
     );
-
-    costs_ = std::vector<double>(SAMPLE_BATCH_NUMBER, 0.0); // sample number 임시
-    nominal_control_sequence_ = Eigen::MatrixXd::Zero(
-        PREDICTION_HORIZON - 1, CONTROL_SPACE::dim
-    );
 }
 
 std::pair<ControlSequence, double> SVGMPPI::solve(
@@ -147,15 +142,12 @@ std::pair<ControlSequence, double> SVGMPPI::solve(
                 q_star
             ).second;
 
-            // // clamping
-            // const double sigma_clamped = std::clamp(
-            //     sigma,
-            //     MIN_STEERING_COVARIANCE,
-            //     MAX_STEERING_COVARIANCE
-            // );
-
-            // test
-            const double sigma_clamped = sigma;
+            // clamping
+            const double sigma_clamped = std::clamp(
+                sigma,
+                MIN_STEERING_COVARIANCE,
+                MAX_STEERING_COVARIANCE
+            );
 
             adaptive_control_covariances_matrix_sequence[i] = Eigen::MatrixXd::Identity(CONTROL_SPACE::dim, CONTROL_SPACE::dim) * sigma_clamped;
         }
@@ -173,9 +165,6 @@ std::pair<ControlSequence, double> SVGMPPI::solve(
         local_cost_map_
     );
 
-    // 어디에 사용될까?
-    costs_ = std::forward<std::vector<double>>(state_sequence_cost_batch);
-
     // calculate weights
     if (IS_SVG) {
         // with nominal sequence by SVG
@@ -192,12 +181,13 @@ std::pair<ControlSequence, double> SVGMPPI::solve(
             *prior_smapling_pointer_,
             LAMBDA,
             ALPHA,
-            costs_,
+            state_sequence_cost_batch,
             nominal_control_sequence_
         ),
         LAMBDA,
         THREAD_NUMBER
     );
+    weight_batch_ = weight_batch;
 
     // update next control sequence by expection (weighted sum)
     ControlSequence updated_control_sequence = Eigen::MatrixXd::Zero(PREDICTION_HORIZON - 1, CONTROL_SPACE::dim);

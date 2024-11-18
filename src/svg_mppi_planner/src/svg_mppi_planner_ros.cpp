@@ -79,7 +79,17 @@ void SVGMPPIPlannerROS::timer_callback()
     // initial_state[STATE_SPACE::velocity] = robot_state_.velocity;
     // initial_state[STATE_SPACE::steering] = robot_state_.steering;
 
+<<<<<<< HEAD
     // const auto [updated_control_sequence, updated_collision_rate] = svg_mppi_pointer_->solve(initial_state);
+=======
+    // svg mppi solve
+    planning::State initial_state = planning::State::Zero();
+    initial_state[STATE_SPACE::x] = robot_state_.x;
+    initial_state[STATE_SPACE::y] = robot_state_.y;
+    initial_state[STATE_SPACE::yaw] = robot_state_.yaw;
+    initial_state[STATE_SPACE::velocity] = robot_state_.velocity;
+    initial_state[STATE_SPACE::steering] = robot_state_.steering;
+>>>>>>> 2ce29b16f16e5da0681063a06e28cc27225a4d4c
 
     // const double current_steering = updated_control_sequence(0, CONTROL_SPACE::steering);
 
@@ -88,6 +98,7 @@ void SVGMPPIPlannerROS::timer_callback()
     // drive_msg.drive.steering_angle = current_steering;
     // steering_publisher_->publish(drive_msg);
 
+<<<<<<< HEAD
 
 
 
@@ -104,6 +115,30 @@ void SVGMPPIPlannerROS::timer_callback()
     // );
 
 
+
+=======
+    auto drive_msg = ackermann_msgs::msg::AckermannDriveStamped();
+    drive_msg.drive.speed = 1.0;
+    drive_msg.drive.steering_angle = current_steering;
+    steering_publisher_->publish(drive_msg);
+
+    // visualize
+    const planning::StateSequence optimized_state_sequence = svg_mppi_pointer_->get_predicted_state_sequence(
+        initial_state,
+        updated_control_sequence
+    );
+    visualize_state_sequence(
+        optimized_state_sequence,
+        "state_sequence",
+        "r"
+    );
+
+    // std::vector<double> weight_batch(400, 1.0);
+    visualize_state_sequence_batch(
+        svg_mppi_pointer_->state_sequence_batch_,
+        svg_mppi_pointer_->weight_batch_
+    );
+>>>>>>> 2ce29b16f16e5da0681063a06e28cc27225a4d4c
 
 
     // // debeg
@@ -195,7 +230,8 @@ void SVGMPPIPlannerROS::odometry_callback(
 void SVGMPPIPlannerROS::visualize_state_sequence_batch(
     const planning::StateSequenceBatch& state_sequence_batch,
     const std::vector<double>& weight_batch
-){
+)
+{
     assert(state_sequence_batch.size() == weight_batch.size());
 
     visualization_msgs::msg::MarkerArray marker_array;
@@ -264,7 +300,8 @@ void SVGMPPIPlannerROS::visualize_state_sequence(
     const planning::StateSequence& state_sequence,
     const std::string& name_space,
     const std::string& rgb
-){
+)
+{
     visualization_msgs::msg::MarkerArray marker_array;
 
     visualization_msgs::msg::Marker arrow;
