@@ -46,55 +46,65 @@ SVGMPPIPlannerROS::SVGMPPIPlannerROS() : Node("svg_mppi_planner_node")
     timer_ = this->create_wall_timer(
         std::chrono::milliseconds(timer_period), std::bind(&SVGMPPIPlannerROS::timer_callback, this)
     );
+
+    // real system
+    // steering_subscriber_ = create_subscription<Float64>(
+    //     "sensors/servo_position_command",
+    //     10,
+    //     std::bind(&SVGMPPIPlannerROS::steering_callback, this, std::placeholders::_1)
+    // );
 }
 
 void SVGMPPIPlannerROS::timer_callback()
 {
-    // check status
-    if (!is_odometry_received_ || !is_local_cost_map_received_) {
-        std::cout << "[SVGMPPIPlannerROS] Not ready: odometry: " << is_odometry_received_
-                  << ", local cost map: " << is_local_cost_map_received_ << std::endl;
-        return;
-    }
+    // // check status
+    // if (!is_odometry_received_ || !is_local_cost_map_received_) {
+    //     std::cout << "[SVGMPPIPlannerROS] Not ready: odometry: " << is_odometry_received_
+    //               << ", local cost map: " << is_local_cost_map_received_ << std::endl;
+    //     return;
+    // }
 
-    // set local cost map for planning
-    svg_mppi_pointer_->set_local_cost_map(
-        *local_cost_map_
-    );
+    // // set local cost map for planning
+    // svg_mppi_pointer_->set_local_cost_map(
+    //     *local_cost_map_
+    // );
 
-    // steer observer
+    // // steer observer
 
-    // svg mppi solve
-    svg_mppi::planning::State initial_state = svg_mppi::planning::State::Zero();
-    initial_state[STATE_SPACE::x] = robot_state_.x;
-    initial_state[STATE_SPACE::y] = robot_state_.y;
-    initial_state[STATE_SPACE::yaw] = robot_state_.yaw;
-    initial_state[STATE_SPACE::velocity] = robot_state_.velocity;
-    initial_state[STATE_SPACE::steering] = robot_state_.steering;
+    // // svg mppi solve
+    // svg_mppi::planning::State initial_state = svg_mppi::planning::State::Zero();
+    // initial_state[STATE_SPACE::x] = robot_state_.x;
+    // initial_state[STATE_SPACE::y] = robot_state_.y;
+    // initial_state[STATE_SPACE::yaw] = robot_state_.yaw;
+    // initial_state[STATE_SPACE::velocity] = robot_state_.velocity;
+    // initial_state[STATE_SPACE::steering] = robot_state_.steering;
 
-    const auto [updated_control_sequence, updated_collision_rate] = svg_mppi_pointer_->solve(initial_state);
+    // const auto [updated_control_sequence, updated_collision_rate] = svg_mppi_pointer_->solve(initial_state);
 
-    const double current_steering = updated_control_sequence(0, CONTROL_SPACE::steering);
+    // const double current_steering = updated_control_sequence(0, CONTROL_SPACE::steering);
 
-    auto drive_msg = ackermann_msgs::msg::AckermannDriveStamped();
-    drive_msg.drive.speed = 0.7;
-    drive_msg.drive.steering_angle = current_steering;
-    steering_publisher_->publish(drive_msg);
-
-
+    // auto drive_msg = ackermann_msgs::msg::AckermannDriveStamped();
+    // drive_msg.drive.speed = 0.7;
+    // drive_msg.drive.steering_angle = current_steering;
+    // steering_publisher_->publish(drive_msg);
 
 
-    visualize_state_sequence(
-        svg_mppi_pointer_->state_sequence_batch_[0],
-        "state_sequence",
-        "r"
-    );
 
-    std::vector<double> weight_batch(200, 10.0);
-    visualize_state_sequence_batch(
-        svg_mppi_pointer_->state_sequence_batch_,
-        weight_batch
-    );
+
+    // visualize_state_sequence(
+    //     svg_mppi_pointer_->state_sequence_batch_[0],
+    //     "state_sequence",
+    //     "r"
+    // );
+
+    // std::vector<double> weight_batch(200, 10.0);
+    // visualize_state_sequence_batch(
+    //     svg_mppi_pointer_->state_sequence_batch_,
+    //     weight_batch
+    // );
+
+
+
 
     // // debeg
     // planning::StateSequenceBatch state_sequence_batch = {

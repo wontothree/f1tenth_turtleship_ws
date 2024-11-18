@@ -11,8 +11,10 @@
 #include "rclcpp/rclcpp.hpp"
 #include <nav_msgs/msg/odometry.hpp>
 
-#include "rclcpp/rclcpp.hpp"
 #include "svg_mppi_planner/svg_mppi.hpp"
+
+// #include "example_interfaces/msg/float64.hpp"
+// #include <std_msgs/msg/float64.hpp>
 
 namespace svg_mppi {
 
@@ -29,7 +31,6 @@ private:
     const int timer_period = 10;                                  // timer period (ms)
 
 private:
-
     std::unique_ptr<svg_mppi::planning::SVGMPPI> svg_mppi_pointer_;
 
     // subscribe
@@ -42,7 +43,8 @@ private:
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_publisher_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr path_publisher_;
 
-    
+    // real system
+    // rclcpp::Subscription<Float64>::SharedPtr steering_subscriber_;
 private:
     /**
      * @brief This function is called in constant period of timer
@@ -95,7 +97,8 @@ private:
     void visualize_state_sequence(
         const planning::StateSequence& state_sequence,
         const std::string& name_space,
-        const std::string& rgb);
+        const std::string& rgb
+    );
 
     /**
      * @brief 
@@ -106,6 +109,18 @@ private:
     void visualize_path(
         const planning::StateSequence& state_sequence,
         const std::string& name_space,
-        const std::string& rgb);
+        const std::string& rgb
+    );
+
+    // // real system
+    // void steering_callback(
+    //     const Float64::SharedPtr steering
+    // )
+    // {
+    //     robot_state_.steering = steering->data;
+
+    //     std::cout << robot_state_.steering << std::endl;
+    //     std::cout << "1" << std::endl;
+    // };
 };
 }  // namespace svg_mppi

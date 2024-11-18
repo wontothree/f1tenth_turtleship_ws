@@ -50,9 +50,9 @@ source install/local_setup.bash
 colcon build --symlink-install
 ```
 
-## Run Packages
+## Run Packages in Real System
 
-Vesc
+1. Vesc
 
 ```bash
 rosdep install -i --from-paths urg_node2
@@ -60,41 +60,38 @@ rosdep install -i --from-paths urg_node2
 lsusb
 ls /dev/input*
 
-ros2 launch vesc_driver vesc_driver_node.launch.py
+ros2 launch vesc_driver vesc_driver_node.launch.py # vesc에 대한 입력 & feedback
 ```
 
-Lidar
+2. Joystick
+
+```bash
+ros2 run joy joy_node            # joystick의 입력을 ros2 topic으로 발행하기 위한 node
+ros2 run joystick joystick_node  # joystick의 입력을 vesc를 위한 topic으로 발행하기 위한 node
+```
+
+3. Lidar
 
 ```bash
 ros2 launch urg_node2 urg_node2.launch.py
 ros2 run tf2_ros static_transform_publisher 0.09 0 0 0 0 0 map laser
 ```
 
-Joystick
-
-```bash
-ros2 run joy joy_node
-ros2 run joystick joystick_node
-```
-
-local costmap generator
+4. local_costmap_generator_node
 
 ```bash
 ros2 run tf2_ros static_transform_publisher 0.09 0.0 0.0 0.0 0.0 0.0 "ego_racecar/laser" "ego_racecar/base_link"
-
 ros2 run local_costmap_generator local_costmap_generator_node
 ```
 
-
-
 # Hardware
 
+- Intel NUC
 - Logitech G F710 Wireless Gamepad
 - Bldc motor
 - Servo motor - steering
 - [Hokuyo](https://www.hokuyo-aut.jp/search/single.php?serial=167)
 - [IMU](https://www.devicemart.co.kr/goods/view?no=15136719&srsltid=AfmBOoqRikGmc_8O2PogU1WQg-s3Kz6dxdQenrYfrV1s8TG_qI2BBXvy)
-- Intel NUC
 
 # Dependencies
 
