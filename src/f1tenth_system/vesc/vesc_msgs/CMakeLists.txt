@@ -1,20 +1,22 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 2.8.3)
 project(vesc_msgs)
 
-find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies()
-
-rosidl_generate_interfaces(vesc_msgs
-  "msg/VescState.msg"
-  "msg/VescStateStamped.msg"
-  DEPENDENCIES
-    builtin_interfaces
-    std_msgs
+find_package(catkin REQUIRED COMPONENTS
+  std_msgs
+  message_generation
 )
 
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-endif()
+add_message_files(
+  DIRECTORY msg
+  FILES
+  VescState.msg
+  VescStateStamped.msg
+)
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
-ament_auto_package()
+catkin_package(
+  CATKIN_DEPENDS std_msgs message_runtime
+)

@@ -1,47 +1,18 @@
-// Copyright 2020 F1TENTH Foundation
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//   * Redistributions of source code must retain the above copyright
-//     notice, this list of conditions and the following disclaimer.
-//
-//   * Redistributions in binary form must reproduce the above copyright
-//     notice, this list of conditions and the following disclaimer in the
-//     documentation and/or other materials provided with the distribution.
-//
-//   * Neither the name of the {copyright_holder} nor the names of its
-//     contributors may be used to endorse or promote products derived from
-//     this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
-
 // -*- mode:c++; fill-column: 100; -*-
 
-#include "vesc_driver/vesc_interface.hpp"
-#include "vesc_driver/vesc_packet_factory.hpp"
-#include "serial_driver/serial_driver.hpp"
+#include "vesc_driver/vesc_interface.h"
 
+#include <pthread.h>
 
-#include <algorithm>
-#include <cassert>
-#include <iomanip>
-#include <iostream>
-#include <memory>
-#include <mutex>
-#include <sstream>
 #include <string>
-#include <thread>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+
+#include <serial/serial.h>
+#include <boost/crc.hpp>
+
+#include "vesc_driver/vesc_packet_factory.h"
 
 namespace vesc_driver
 {
@@ -49,72 +20,72 @@ namespace vesc_driver
 class VescInterface::Impl
 {
 public:
-  Impl()
-  : owned_ctx{new IoContext(2)},
-  serial_driver_{new drivers::serial_driver::SerialDriver(*owned_ctx)}
+  Impl() :
+    serial_(std::string(), 115200, serial::Timeout::simpleTimeout(100),
+            serial::eightbits, serial::parity_none, serial::stopbits_one, serial::flowcontrol_none)
   {}
 
-  void serial_receive_callback(const std::vector<uint8_t> & buffer);
-  void packet_creation_thread();
-  void on_configure();
-  void connect(const std::string & port);
+  void* rxThread(void);
 
-  bool packet_thread_run_;
-  std::unique_ptr<std::thread> packet_thread_;
+  static void* rxThreadHelper(void *context)
+  {
+    return ((VescInterface::Impl*)context)->rxThread();
+  }
+
+  pthread_t rx_thread_;
+  bool rx_thread_run_;
   PacketHandlerFunction packet_handler_;
   ErrorHandlerFunction error_handler_;
-  std::unique_ptr<drivers::serial_driver::SerialPortConfig> device_config_;
-  std::mutex buffer_mutex_;
-  std::string device_name_;
-  std::unique_ptr<IoContext> owned_ctx{};
-  std::unique_ptr<drivers::serial_driver::SerialDriver> serial_driver_;
-  
-  ~Impl(){
-    if (owned_ctx) {
-      owned_ctx->waitForExit();
-  }
-  }
-private:
-  std::vector<uint8_t> buffer_;
+  serial::Serial serial_;
+  VescFrame::CRC send_crc_;
 };
 
-void VescInterface::Impl::serial_receive_callback(const std::vector<uint8_t> & buffer)
+void* VescInterface::Impl::rxThread(void)
 {
-  buffer_mutex_.lock(); // wait untill the current buffer read finishes
-  buffer_.reserve(buffer_.size() + buffer.size());
-  buffer_.insert(buffer_.end(), buffer.begin(), buffer.end());
-  buffer_mutex_.unlock();
-}
+  Buffer buffer;
+  buffer.reserve(4096);
 
-void VescInterface::Impl::packet_creation_thread()
-{
-  while (packet_thread_run_)
-  {
-    buffer_mutex_.lock();
+  while (rx_thread_run_) {
+
     int bytes_needed = VescFrame::VESC_MIN_FRAME_SIZE;
-    if (!buffer_.empty()) {
+    if (!buffer.empty()) {
+
       // search buffer for valid packet(s)
-      auto iter = buffer_.begin();
-      while (iter != buffer_.end())
-      {
+      Buffer::iterator iter(buffer.begin());
+      Buffer::iterator iter_begin(buffer.begin());
+      while (iter != buffer.end()) {
+
         // check if valid start-of-frame character
         if (VescFrame::VESC_SOF_VAL_SMALL_FRAME == *iter ||
-          VescFrame::VESC_SOF_VAL_LARGE_FRAME == *iter)
-        {
+            VescFrame::VESC_SOF_VAL_LARGE_FRAME == *iter) {
+
           // good start, now attempt to create packet
           std::string error;
           VescPacketConstPtr packet =
-            VescPacketFactory::createPacket(iter, buffer_.end(), &bytes_needed, &error);
+            VescPacketFactory::createPacket(iter, buffer.end(), &bytes_needed, &error);
           if (packet) {
+            // good packet, check if we skipped any data
+            if (std::distance(iter_begin, iter) > 0) {
+              std::ostringstream ss;
+              ss << "Out-of-sync with VESC, unknown data leading valid frame. Discarding "
+                 << std::distance(iter_begin, iter) << " bytes.";
+              error_handler_(ss.str());
+            }
             // call packet handler
             packet_handler_(packet);
             // update state
             iter = iter + packet->frame().size();
+            iter_begin = iter;
             // continue to look for another frame in buffer
             continue;
-          } else if (bytes_needed > 0) {
+          }
+          else if (bytes_needed > 0) {
             // need more data, break out of while loop
-            break;  // for (iter_sof...
+            break; // for (iter_sof...
+          }
+          else {
+            // else, this was not a packet, move on to next byte
+            error_handler_(error);
           }
         }
 
@@ -122,48 +93,40 @@ void VescInterface::Impl::packet_creation_thread()
       }
 
       // if iter is at the end of the buffer, more bytes are needed
-      if (iter == buffer_.end()) {
+      if (iter == buffer.end())
         bytes_needed = VescFrame::VESC_MIN_FRAME_SIZE;
-      }
 
       // erase "used" buffer
-      buffer_.erase(buffer_.begin(), iter);
+      if (std::distance(iter_begin, iter) > 0) {
+        std::ostringstream ss;
+        ss << "Out-of-sync with VESC, discarding " << std::distance(iter_begin, iter) << " bytes.";
+        error_handler_(ss.str());
+      }
+      buffer.erase(buffer.begin(), iter);
     }
 
-    buffer_mutex_.unlock();
-    // Only attempt to read every 10 ms
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    // attempt to read at least bytes_needed bytes from the serial port
+    int bytes_to_read =
+      std::max(bytes_needed, std::min(4096, static_cast<int>(serial_.available())));
+    int bytes_read = serial_.read(buffer, bytes_to_read);
+    if (bytes_needed > 0 && 0 == bytes_read && !buffer.empty()) {
+      error_handler_("Possibly out-of-sync with VESC, read timout in the middle of a frame.");
+    }
+
   }
 }
 
-void VescInterface::Impl::connect(const std::string & port)
-{
-  uint32_t baud_rate = 115200;
-  auto fc = drivers::serial_driver::FlowControl::HARDWARE;
-  auto pt = drivers::serial_driver::Parity::NONE;
-  auto sb = drivers::serial_driver::StopBits::ONE;
-  device_config_ = std::make_unique<drivers::serial_driver::SerialPortConfig>(baud_rate, fc, pt, sb);
-  serial_driver_->init_port(port, *device_config_);
-  if (!serial_driver_->port()->is_open()) {
-    serial_driver_->port()->open();
-    serial_driver_->port()->async_receive(
-      std::bind(&VescInterface::Impl::serial_receive_callback, this, std::placeholders::_1));
-  }
 
-}
-
-VescInterface::VescInterface(
-  const std::string & port,
-  const PacketHandlerFunction & packet_handler,
-  const ErrorHandlerFunction & error_handler)
-: impl_(new Impl())
+VescInterface::VescInterface(const std::string& port,
+                             const PacketHandlerFunction& packet_handler,
+                             const ErrorHandlerFunction& error_handler) :
+  impl_(new Impl())
 {
   setPacketHandler(packet_handler);
   setErrorHandler(error_handler);
   // attempt to conect if the port is specified
-  if (!port.empty()) {
+  if (!port.empty())
     connect(port);
-  }
 }
 
 VescInterface::~VescInterface()
@@ -171,19 +134,19 @@ VescInterface::~VescInterface()
   disconnect();
 }
 
-void VescInterface::setPacketHandler(const PacketHandlerFunction & handler)
+void VescInterface::setPacketHandler(const PacketHandlerFunction& handler)
 {
   // todo - definately need mutex
   impl_->packet_handler_ = handler;
 }
 
-void VescInterface::setErrorHandler(const ErrorHandlerFunction & handler)
+void VescInterface::setErrorHandler(const ErrorHandlerFunction& handler)
 {
   // todo - definately need mutex
   impl_->error_handler_ = handler;
 }
 
-void VescInterface::connect(const std::string & port)
+void VescInterface::connect(const std::string& port)
 {
   // todo - mutex?
 
@@ -193,18 +156,20 @@ void VescInterface::connect(const std::string & port)
 
   // connect to serial port
   try {
-    impl_->connect(port);
-  } catch (const std::exception & e) {
-    std::stringstream ss;
-    ss << "Failed to open the serial port " << port << " to the VESC. " << e.what();
-    throw SerialException(ss.str().c_str());
+    impl_->serial_.setPort(port);
+    impl_->serial_.open();
+  }
+  catch (const std::exception& e) {
+      std::stringstream ss;
+      ss << "Failed to open the serial port to the VESC. " << e.what();
+      throw SerialException(ss.str().c_str());
   }
 
   // start up a monitoring thread
-  impl_->packet_thread_run_ = true;
-  impl_->packet_thread_ = std::unique_ptr<std::thread>(
-    new std::thread(
-      &VescInterface::Impl::packet_creation_thread, impl_.get()));
+  impl_->rx_thread_run_ = true;
+  int result =
+    pthread_create(&impl_->rx_thread_, NULL, &VescInterface::Impl::rxThreadHelper, impl_.get());
+  assert(0 == result);
 }
 
 void VescInterface::disconnect()
@@ -213,28 +178,27 @@ void VescInterface::disconnect()
 
   if (isConnected()) {
     // bring down read thread
-    impl_->packet_thread_run_ = false;
-    impl_->packet_thread_->join();
-    impl_->serial_driver_->port()->close();
+    impl_->rx_thread_run_ = false;
+    int result = pthread_join(impl_->rx_thread_, NULL);
+    assert(0 == result);
+
+    impl_->serial_.close();
   }
 }
 
 bool VescInterface::isConnected() const
 {
-  auto port = impl_->serial_driver_->port();
-  if (port)
-  {
-    return port->is_open();
-  }
-  else
-  {
-    return false;
-  }
+  return impl_->serial_.isOpen();
 }
 
-void VescInterface::send(const VescPacket & packet)
+void VescInterface::send(const VescPacket& packet)
 {
-  impl_->serial_driver_->port()->async_send(packet.frame());
+  size_t written = impl_->serial_.write(packet.frame());
+  if (written != packet.frame().size()) {
+    std::stringstream ss;
+    ss << "Wrote " << written << " bytes, expected " << packet.frame().size() << ".";
+    throw SerialException(ss.str().c_str());
+  }
 }
 
 void VescInterface::requestFWVersion()
@@ -277,4 +241,4 @@ void VescInterface::setServo(double servo)
   send(VescPacketSetServoPos(servo));
 }
 
-}  // namespace vesc_driver
+} // namespace vesc_driver

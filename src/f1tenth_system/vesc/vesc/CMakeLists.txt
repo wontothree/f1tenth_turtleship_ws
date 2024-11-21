@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 2.8.3)
 project(vesc)
-find_package(ament_cmake_auto REQUIRED)
-ament_auto_package()
+find_package(catkin REQUIRED)
+catkin_metapackage()

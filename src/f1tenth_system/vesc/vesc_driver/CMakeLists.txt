@@ -1,50 +1,73 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 2.8.3)
 project(vesc_driver)
 
-# Set minimum C++ standard to C++14
-if(NOT "${CMAKE_CXX_STANDARD_COMPUTED_DEFAULT}")
- message(STATUS "Changing CXX_STANDARD from C++98 to C++14")
- set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-elseif("${CMAKE_CXX_STANDARD_COMPUTED_DEFAULT}" STREQUAL "98")
- message(STATUS "Changing CXX_STANDARD from C++98 to C++14")
- set(CMAKE_CXX_STANDARD 14)
-endif()
+find_package(catkin REQUIRED COMPONENTS
+  nodelet
+  pluginlib
+  roscpp
+  std_msgs
+  vesc_msgs
+  serial
+)
 
-find_package(ament_cmake_auto REQUIRED)
-ament_auto_find_build_dependencies()
-
-find_package(Threads)
+catkin_package(
+  INCLUDE_DIRS include
+  CATKIN_DEPENDS nodelet pluginlib roscpp std_msgs vesc_msgs serial
+)
 
 ###########
 ## Build ##
 ###########
 
-# node library
-ament_auto_add_library(${PROJECT_NAME} SHARED
-  src/vesc_driver.cpp
-  src/vesc_interface.cpp
-  src/vesc_packet.cpp
-  src/vesc_packet_factory.cpp
+include_directories(
+  include
+  ${Boost_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
 )
-target_link_libraries(${PROJECT_NAME}
-  ${CMAKE_THREAD_LIBS_INIT}
+
+# node executable
+add_executable(vesc_driver_node src/vesc_driver_node.cpp
+                                src/vesc_driver.cpp
+                                src/vesc_interface.cpp
+                                src/vesc_packet.cpp
+                                src/vesc_packet_factory.cpp)
+add_dependencies(vesc_driver_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(vesc_driver_node
+  ${catkin_LIBRARIES}
 )
-rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN vesc_driver::VescDriver
-  EXECUTABLE ${PROJECT_NAME}_node
+
+# nodelet library
+add_library(vesc_driver_nodelet src/vesc_driver_nodelet.cpp
+                                src/vesc_driver.cpp
+                                src/vesc_interface.cpp
+                                src/vesc_packet.cpp
+                                src/vesc_packet_factory.cpp)
+add_dependencies(vesc_driver_nodelet ${catkin_EXPORTED_TARGETS})
+target_link_libraries(vesc_driver_nodelet
+  ${catkin_LIBRARIES}
 )
+
+#############
+## Install ##
+#############
+
+install(TARGETS vesc_driver_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(TARGETS vesc_driver_nodelet
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+install(FILES vesc_driver_nodelet.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch)
 
 #############
 ## Testing ##
 #############
 
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-endif()
-
-ament_auto_package(
-  INSTALL_TO_SHARE
-    launch
-    params
-)
+# TODO
