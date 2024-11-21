@@ -36,3 +36,10 @@ catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_GPU=OFF
 
 ./script/launch_controllers.sh 
 ```
+
+# Dependencies
+
+- [Slam] [Cartographer]()
+- [Localization] [Reliable Monte Carlo Localization for Mobile Robots](https://github.com/NaokiAkai/als_ros?tab=readme-ov-file)
+- [Global Planner] [global_racetrajectory_optimization](https://github.com/TUMFTM/trajectory_planning_helpers)
+- [Local Planner] [Stein Variational Guided Model Predictive Path Integral Control: Proposal and Experiments with Fast Maneuvering Vehicles](https://github.com/kohonda/proj-svg_mppi)
