@@ -10,12 +10,14 @@ if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     exit 1
 fi
 
+# vvvvvvvvvvvvvvvvvvvvvv
 if [ -z $MAP_NAME ]; then
-    MAP_NAME="berlin"
+    MAP_NAME=1121
 fi
 
+# vvvvvvvvvvvvvvvvvvvvvvv
 if [ -z "$NUM_STATIC_OBSTACLES" ]; then
-    NUM_STATIC_OBSTACLES=5
+    NUM_STATIC_OBSTACLES=0
 fi
 
 # get location of root workspace

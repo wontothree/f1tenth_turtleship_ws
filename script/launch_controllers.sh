@@ -14,7 +14,7 @@ if [[ "$1" == "-h" || "$1" == "--help" ]]; then
 fi
 
 if [ -z $MAP_NAME ]; then
-    MAP_NAME="berlin"
+    MAP_NAME="1121"
 fi
 
 if [ -z "$MPPI_PARAM_PATH" ]; then
