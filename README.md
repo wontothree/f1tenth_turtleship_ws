@@ -45,3 +45,11 @@ catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_GPU=OFF
 - [[GITHUB] global_racetrajectory_optimization](https://github.com/TUMFTM/trajectory_planning_helpers)
 - [[GITHUB] proj-svg_mppi](https://github.com/kohonda/proj-svg_mppi)
 - [[GITHUB] f1tenth_system](https://github.com/f1tenth/f1tenth_system/tree/braking?tab=readme-ov-file)
+
+# Tmp
+
+1. Vesc
+
+2. Joystick
+
+3. Lidar
