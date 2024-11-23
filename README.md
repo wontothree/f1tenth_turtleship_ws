@@ -9,31 +9,23 @@ This project is for F!TENTH AUTONOMOUS GRAND Prix at CDC 2024.
 
 # Getting Started
 
-```
-# Usage: make [command]
-SHELL := /bin/bash
-setup:
-	# install dependencies for ROS 	
-	rosdep install -i --from-path src --rosdistro noetic -y
-	sudo apt update
-	sudo apt install -y ros-noetic-map-server python3-catkin-tools libomp-dev ros-noetic-jsk-rviz-plugins mpv
+## Simulation
 
-# build without simulator with ROS
-.PHONY: build
-build:
-	catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_GPU=OFF
+```bash
+# install dependencies
+cd f1tenth_turtleship_ws
+make setup
 
-clean:
-	# clean build files
-	rm -rf build devel logs .catkin_tools install
+# build controllers
+cd f1tenth_turtleship_ws
+make build
 
-```
-
-```
-catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_WITH_GPU=OFF
-
+# launch simulator in the Docker container
+cd f1tenth_turtleship_ws
 ./script/launch_simulator.sh
 
+# launch controllers in another terminal
+cd f1tenth_turtleship_ws
 ./script/launch_controllers.sh 
 ```
 
