@@ -1,6 +1,0 @@
-reference_waypoint_loader
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/reference_waypoint_loader/cmake.lock /home/turtleship/f1tenth_turtleship_ws/devel/./cmake.lock
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/reference_waypoint_loader/lib/reference_waypoint_loader/reference_waypoint_loader_node /home/turtleship/f1tenth_turtleship_ws/devel/lib/reference_waypoint_loader/reference_waypoint_loader_node
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/reference_waypoint_loader/lib/pkgconfig/reference_waypoint_loader.pc /home/turtleship/f1tenth_turtleship_ws/devel/lib/pkgconfig/reference_waypoint_loader.pc
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/reference_waypoint_loader/share/reference_waypoint_loader/cmake/reference_waypoint_loaderConfig.cmake /home/turtleship/f1tenth_turtleship_ws/devel/share/reference_waypoint_loader/cmake/reference_waypoint_loaderConfig.cmake
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/reference_waypoint_loader/share/reference_waypoint_loader/cmake/reference_waypoint_loaderConfig-version.cmake /home/turtleship/f1tenth_turtleship_ws/devel/share/reference_waypoint_loader/cmake/reference_waypoint_loaderConfig-version.cmake

@@ -1,6 +1,0 @@
-reference_sdf_generator
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/reference_sdf_generator/cmake.lock /home/turtleship/f1tenth_turtleship_ws/devel/./cmake.lock
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/reference_sdf_generator/lib/reference_sdf_generator/reference_sdf_generator_node /home/turtleship/f1tenth_turtleship_ws/devel/lib/reference_sdf_generator/reference_sdf_generator_node
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/reference_sdf_generator/lib/pkgconfig/reference_sdf_generator.pc /home/turtleship/f1tenth_turtleship_ws/devel/lib/pkgconfig/reference_sdf_generator.pc
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/reference_sdf_generator/share/reference_sdf_generator/cmake/reference_sdf_generatorConfig-version.cmake /home/turtleship/f1tenth_turtleship_ws/devel/share/reference_sdf_generator/cmake/reference_sdf_generatorConfig-version.cmake
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/reference_sdf_generator/share/reference_sdf_generator/cmake/reference_sdf_generatorConfig.cmake /home/turtleship/f1tenth_turtleship_ws/devel/share/reference_sdf_generator/cmake/reference_sdf_generatorConfig.cmake

@@ -1,5 +1,0 @@
-racecar_model
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/racecar_model/cmake.lock /home/turtleship/f1tenth_turtleship_ws/devel/./cmake.lock
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/racecar_model/lib/pkgconfig/racecar_model.pc /home/turtleship/f1tenth_turtleship_ws/devel/lib/pkgconfig/racecar_model.pc
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/racecar_model/share/racecar_model/cmake/racecar_modelConfig-version.cmake /home/turtleship/f1tenth_turtleship_ws/devel/share/racecar_model/cmake/racecar_modelConfig-version.cmake
-/home/turtleship/f1tenth_turtleship_ws/devel/.private/racecar_model/share/racecar_model/cmake/racecar_modelConfig.cmake /home/turtleship/f1tenth_turtleship_ws/devel/share/racecar_model/cmake/racecar_modelConfig.cmake

@@ -1,2 +1,0 @@
-/home/anthony/f1tenth_turtleship_ws/devel/./cmake.lock 143
-/home/turtleship/f1tenth_turtleship_ws/devel/./cmake.lock 36
