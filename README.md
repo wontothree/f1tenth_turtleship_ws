@@ -70,11 +70,4 @@ roslaunch mppi_controller mppi_controller.launch is_simulation:=false is_localiz
 # Acknowledgement
 
 - [[GITHUB] cartographer](https://github.com/cartographer-project/cartographer)
-- [[GITHUB] cartopgraher_ros](https://github.com/cartographer-project/cartographer_ros)
-- [[GITHUB] als_ros](https://github.com/NaokiAkai/als_ros?tab=readme-ov-file)
-
-using
-
-- [[GITHUB] global_racetrajectory_optimization](https://github.com/TUMFTM/trajectory_planning_helpers)
-- [[GITHUB] proj-svg_mppi](https://github.com/kohonda/proj-svg_mppi)
-- [[GITHUB] f1tenth_system](https://github.com/ForzaETH/f1tenth_system/tree/56a2bbfc663b2cf3e7275a4d3323ebcbdbf9592b)
+- [[GITHUB] cartopgraher_ros](https
