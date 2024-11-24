@@ -14,3 +14,17 @@ build:
 clean:
 	# clean build files
 	rm -rf build devel logs .catkin_tools install
+
+# run mppi controller in physical system
+.PHONY: run_physical_system
+run_physical_system:
+	@tmux new-session -d -s ros_system \; \
+	    send-keys "roslaunch reference_sdf_generator reference_sdf_generator.launch" C-m \; \
+	    split-window -v \; \
+	    send-keys "roslaunch reference_waypoint_loader reference_waypoint_loader.launch" C-m \; \
+	    split-window -v \; \
+	    send-keys "roslaunch local_costmap_generator local_costmap_generator.launch" C-m \; \
+	    split-window -v \; \
+	    send-keys "roslaunch mppi_controller mppi_controller.launch is_simulation:=false is_localize_less_mode:=false" C-m \; \
+	    attach
+
