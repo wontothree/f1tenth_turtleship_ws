@@ -24,11 +24,11 @@ collision_rate_threshold: 1.1 # [0, 1] If the collision rate is larger than this
 speed_deque_size: 10
 stuck_speed_threshold: 0.3 # [m/s]
 steer_1st_delay: 0.1 # [s] steer delay of 1st order system
-mpc_mode: "svg_mppi" # "forward_mppi" or "reverse_mppi" or "sv_mpc" or "svg_mppi"
+mpc_mode: "forward_mppi" # "forward_mppi" or "reverse_mppi" or "sv_mpc" or "svg_mppi"
 
 common:
   thread_num: 12
-  prediction_step_size: 15
+  prediction_step_size: 10
   prediction_interval: 0.05
   steer_delay: 0.025 # [s] dead time. If set enough large value, the prediction is similar to DWA planner.
   max_steer_angle: 0.45
