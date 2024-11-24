@@ -31,41 +31,38 @@ cd f1tenth_turtleship_ws
 
 ## Physical System
 
-race stack
-
 ```bash
+roscore
+
 # install dependencies
 rosdep install --from-paths src --ignore-src -r -y
 
-roscore
+# build (or catkin_make, catkin_make_isolated)
+make build
 
-# build
-catkin_make_isolated
+# setting environment
+source devel/setup.bash
+```
 
-source ~/f1tenth_turtleship_ws/devel/setup.bash
+race stack
 
+```bash
 roslaunch stack_master mapping.launch map_name:=1 racecar_version:=NUC2
-
 roslaunch stack_master base_system.launch map_name:=1 racecar_version:=NUC2
 ```
 
 mppi controller
 
 ```bash
-# build
-catkin_make
-
-# setting environment
-source devel/setup.bash
-
+roslaunch reference_sdf_generator reference_sdf_generator.launch
 roslaunch reference_waypoint_loader reference_waypoint_loader.launch
-
 roslaunch local_costmap_generator local_costmap_generator.launch
-
 roslaunch mppi_controller mppi_controller.launch is_simulation:=false is_localize_less_mode:=false
 ```
 
 # Acknowledgement
+
+Standing on the shoulders of giants
 
 - [proj-svg_mppi](https://github.com/kohonda/proj-svg_mppi)
 - [race_stack](https://github.com/ForzaETH/race_stack/tree/main)
