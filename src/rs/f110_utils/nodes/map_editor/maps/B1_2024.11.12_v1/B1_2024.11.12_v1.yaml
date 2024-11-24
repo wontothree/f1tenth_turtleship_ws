@@ -1,9 +1,0 @@
-free_thresh: 0.196
-image: B1_2024.11.12_v1.png
-negate: 0
-occupied_thresh: 0.65
-origin:
-- -4.067708206176758
-- -1.7706386566162111
-- 0
-resolution: 0.05000000074505806

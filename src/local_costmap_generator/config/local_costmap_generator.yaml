@@ -1,5 +1,6 @@
 # system
-robot_frame_id: ego_racecar/base_link
+#robot_frame_id: ego_racecar/base_link # base_link 
+robot_frame_id: base_link # race stack 사용시
 sensor_frame_id: laser
 in_scan_topic: scan
 out_costmap_topic: local_costmap

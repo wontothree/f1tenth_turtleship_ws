@@ -42,6 +42,7 @@ private:
     float ref_v_scale_;
     float scaled_v_min_;
     float scaled_v_max_;
+    //float speed_scaling_factor_;  // 속도 비율 변수
 };
 
 }  // namespace planning

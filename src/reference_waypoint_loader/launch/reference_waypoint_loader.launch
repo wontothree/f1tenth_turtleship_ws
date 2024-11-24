@@ -1,6 +1,6 @@
 <launch>
     <node pkg="reference_waypoint_loader" type="reference_waypoint_loader_node" name="reference_waypoint_loader" output="screen">
-        <!-- <param name="reference_waypoint_csv" value="$(find reference_waypoint_loader)/data/reference_waypoint.csv" /> -->
+        <param name="reference_waypoint_csv" value="$(find reference_waypoint_loader)/data/reference_waypoint.csv" />
         <param name="reference_waypoint_topic" value="/reference_waypoint" />
         <param name="reference_path_topic" value="/reference_path" />
         <param name="reference_rviz_marker_topic" value="/rviz_reference_marker" />
@@ -13,3 +13,4 @@
         <param name="reference_velocity_max" value="10" />
     </node>
 </launch>
+

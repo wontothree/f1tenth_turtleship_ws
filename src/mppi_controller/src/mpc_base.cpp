@@ -335,7 +335,7 @@ namespace cpu {
 
             // collision cost
             // check inside of gridmap
-            double collision_cost = 10.0;
+            double collision_cost = 10.0; 
             if (obstacle_map.isInside(grid_map::Position(local_state(STATE_SPACE::x), local_state(STATE_SPACE::y)))) {
                 collision_cost =
                     obstacle_map.atPosition(obstacle_layer_name_, grid_map::Position(local_state(STATE_SPACE::x), local_state(STATE_SPACE::y)));

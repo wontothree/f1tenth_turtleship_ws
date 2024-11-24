@@ -1,7 +1,0 @@
-image: /home/turtleship/turtleship_ws/src/race_stack/f110_utils/nodes/map_editor/maps/CDSLlab/CDSL.pgm
-resolution: 0.050000
-origin: [-0.834964, -3.680925, 0.000000]
-negate: 0
-occupied_thresh: 0.65
-free_thresh: 0.196
-

@@ -54,6 +54,10 @@ namespace mppi {
         };
 
     private:
+        // speed weight
+        const double SPEED_WEIGHT = 0.5;
+
+
         std::mutex mtx_;
 
         /* ros system variables */

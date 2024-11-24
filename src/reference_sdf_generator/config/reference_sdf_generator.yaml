@@ -1,6 +1,7 @@
 out_sdf_topic: reference_sdf
 in_waypoints_topic: reference_waypoint
-robot_frame_id: ego_racecar/base_link
+#robot_frame_id: ego_racecar/base_link 
+robot_frame_id: base_link # race stack 사용시
 map_frame_id: map
 backward_point_topic: backward_point
 

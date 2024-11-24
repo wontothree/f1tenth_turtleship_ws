@@ -1,0 +1,9 @@
+free_thresh: 0.196
+image: B1_1124_1106.png
+negate: 0
+occupied_thresh: 0.65
+origin:
+- -5.048550033569336
+- -2.8285789489746094
+- 0
+resolution: 0.05000000074505806

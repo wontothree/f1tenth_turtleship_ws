@@ -260,16 +260,16 @@ void MPPIControllerROS::timer_callback([[maybe_unused]] const ros::TimerEvent& t
         }
     }
 
-    if (!is_activate_ad_ && !is_simulation_) {
-        // publish zero control command and return
-        ROS_WARN_THROTTLE(5.0, "[MPPIControllerROS] waiting to activate signal");
-        control_msg_.header.stamp = ros::Time::now();
-        control_msg_.drive.steering_angle = 0.0;
-        control_msg_.drive.speed = 0.0;
-        pub_ackermann_cmd_.publish(control_msg_);
+    // if (!is_activate_ad_ && !is_simulation_) {
+    //     // publish zero control command and return
+    //     ROS_WARN_THROTTLE(5.0, "[MPPIControllerROS] waiting to activate signal");
+    //     control_msg_.header.stamp = ros::Time::now();
+    //     control_msg_.drive.steering_angle = 0.0;
+    //     control_msg_.drive.speed = 0.0;
+    //     pub_ackermann_cmd_.publish(control_msg_);
 
-        return;
-    }
+    //     return;
+    // }
 
     if (!is_start_) {
         // publish zero control command and
@@ -339,7 +339,7 @@ void MPPIControllerROS::timer_callback([[maybe_unused]] const ros::TimerEvent& t
                 "constant speed mode.");
         }
     }
-    control_msg_.drive.speed = speed_cmd;
+    control_msg_.drive.speed = speed_cmd * SPEED_WEIGHT;
 
     pub_ackermann_cmd_.publish(control_msg_);
 

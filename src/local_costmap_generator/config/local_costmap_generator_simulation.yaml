@@ -1,6 +1,6 @@
 # system
-robot_frame_id: ego_racecar/base_link
-sensor_frame_id: ego_racecar/laser
+robot_frame_id: ego_racecar/base_link 
+sensor_frame_id: ego_racecar/laser 
 in_scan_topic: scan
 out_costmap_topic: local_costmap
 

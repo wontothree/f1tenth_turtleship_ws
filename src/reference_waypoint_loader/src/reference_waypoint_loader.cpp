@@ -11,9 +11,10 @@ ReferenceWaypointLoader::ReferenceWaypointLoader() : nh_(), private_nh_("~") {
     private_nh_.param<std::string>("reference_waypoint_x_column_label", ref_x_label_, "opt_x");
     private_nh_.param<std::string>("reference_waypoint_y_column_label", ref_y_label_, "opt_y");
     private_nh_.param<std::string>("reference_waypoint_v_column_label", ref_v_label_, "ref_v");
-    private_nh_.param<float>("reference_velocity_scale", ref_v_scale_, 1.0);
+    private_nh_.param<float>("reference_velocity_scale", ref_v_scale_, 0.05); // 여기를 바꿔서 속도 비율 변경 
     private_nh_.param<float>("scaled_velocity_min", scaled_v_min_, 0.0);
     private_nh_.param<float>("scaled_velocity_max", scaled_v_max_, 100.0);
+    
 
     if (!std::filesystem::exists(csv_waypoint_)) {
         ROS_ERROR("reference path file does not exist: %s", csv_waypoint_.c_str());
