@@ -1,0 +1,32 @@
+global_limit: 0.5
+n_sectors: 5
+Sector0:
+  start: 0
+  end: 41
+  scaling: 0.5
+  only_FTG: false
+  no_FTG: false
+Sector1:
+  start: 42
+  end: 80
+  scaling: 0.5
+  only_FTG: false
+  no_FTG: false
+Sector2:
+  start: 81
+  end: 139
+  scaling: 0.5
+  only_FTG: false
+  no_FTG: false
+Sector3:
+  start: 140
+  end: 191
+  scaling: 0.5
+  only_FTG: false
+  no_FTG: false
+Sector4:
+  start: 192
+  end: 224
+  scaling: 0.5
+  only_FTG: false
+  no_FTG: false
