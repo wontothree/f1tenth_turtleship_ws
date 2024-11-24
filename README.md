@@ -40,7 +40,10 @@ rosdep install --from-paths src --ignore-src -r -y
 roscore
 
 # build
-catkin_make_isolated
+catkin_make # or catkin_make_isolated
+
+# setting environment
+source devel/setup.bash
 
 source ~/f1tenth_turtleship_ws/devel/setup.bash
 
@@ -52,17 +55,13 @@ roslaunch stack_master base_system.launch map_name:=1 racecar_version:=NUC2
 mppi controller
 
 ```bash
-# build
-catkin_make
-
-# setting environment
-source devel/setup.bash
+roslaunch reference_sdf_generator reference_sdf_generator.launch
 
 roslaunch reference_waypoint_loader reference_waypoint_loader.launch
 
 roslaunch local_costmap_generator local_costmap_generator.launch
 
-roslaunch mppi_controller mppi_controller.launch is_simulation:=false is_localize_less_mode:=false
+roslaunch mppi_controller mppi_controller.launch
 ```
 
 # Acknowledgement
