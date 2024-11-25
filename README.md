@@ -4,14 +4,25 @@ This project is for F1TENTH AUTONOMOUS GRAND Prix at CDC 2024.
 
     f1tenth_turtleship_ws
     └── src/
-        ├── vesc/                                 # 
-        ├── urg_node2/                            # 
-        ├── grid_map/                             # 
-        ├── joystick/                             #
-        ├── local_costmap_generator/              # 
-        ├── svg_mppi_planner/                     # 
-        ├── mppi_planner/                         # 
-        └── pid_planner/                          #
+        ├── simulator/                           # f1tenth gym
+        ├── mppi_metrics_msgs/                   # 
+        ├── waypoint_msg/                        # 
+        ├── eval/                                # evaluation for controller
+        ├── racecar_model/                       # 
+        ├── reference_sdf_generator/             # 
+        ├── reference_waypoint_loader/           #
+        ├── local_costmap_generator/             #
+        ├── mappi_controller/                    # local planner tracking global plan
+        ├──                              
+        ├── f1tenth_system/                      # 
+        ├── vesc/                                # 
+        ├── stack_master/                        # 
+        ├── vesc/                                # 
+        ├── vesc/                                # 
+        ├── vesc/                                # 
+        ├── vesc/                                # 
+        ├── vesc/                                # 
+        └──
 
 # Tested Environment
 
