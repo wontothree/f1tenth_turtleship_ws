@@ -2,10 +2,32 @@
 
 This project is for F1TENTH AUTONOMOUS GRAND Prix at CDC 2024.
 
+    f1tenth_turtleship_ws
+    └── src/
+        ├── vesc/                                 # 
+        ├── urg_node2/                            # 
+        ├── grid_map/                             # 
+        ├── joystick/                             #
+        ├── local_costmap_generator/              # 
+        ├── svg_mppi_planner/                     # 
+        ├── mppi_planner/                         # 
+        └── pid_planner/                          #
+
 # Tested Environment
+
+## Software
 
 - Native Ubuntu 20.04 (LTS)
 - ROS1 Noetic
+
+## Hardware
+
+- NUC11TNHi7 : CPU: i7-1165G7 (4.7GHz)
+- Logitech G F710 Wireless Gamepad
+- Bldc motor : for driving
+- Servo motor : for steering
+- [Hokuyo UST-10LX](https://hokuyo-usa.com/products/lidar-obstacle-detection/ust-10lx) : 2D LiDAR, 270 degree field-of-view, up to 10m, 25ms scan speed
+- [IMU](https://www.devicemart.co.kr/goods/view?no=15136719&srsltid=AfmBOoqRikGmc_8O2PogU1WQg-s3Kz6dxdQenrYfrV1s8TG_qI2BBXvy)
 
 # Getting Started
 
@@ -66,20 +88,3 @@ Standing on the shoulders of giants
 
 - [proj-svg_mppi](https://github.com/kohonda/proj-svg_mppi)
 - [race_stack](https://github.com/ForzaETH/race_stack/tree/main)
-
-# TMP
-
-Joystick
-
-```bash
-roslaunch ackermann_drive_teleop ackermann_drive_joyop.launch
-
-rosparam set speed_to_erpm_gain 4614.0
-rosparam set speed_to_erpm_offset 0
-rosparam set steering_angle_to_servo_gain -1.2135
-rosparam set steering_angle_to_servo_offset 0.5304
-rosrun vesc_ackermann ackermann_to_vesc_node
-roslaunch vesc_ackermann ackermann_to_vesc_node.launch
-
-roslaunch vesc_driver vesc_driver_node.launch port:=/dev/ttyACM0
-```
