@@ -60,6 +60,30 @@ cd f1tenth_turtleship_ws
 
 ## Physical System
 
+### Simple version
+
+```bash
+roscore
+
+make setup
+
+make build
+
+source devel/setup.bash
+```
+
+1. Slam and Global trajectory optimization using race_stack
+
+```bash
+roslaunch stack_master mapping.launch map_name:=<LOCATION_MMDD_HHMM>
+```
+
+You must specify the map_name parameter in the following launch command. We recommend using the format LOCATION_DATE_TIME for the map name, such as `B1_1126_0613`. If you succeeded, a folder and the corresponding files with the name you specified should have been created in the `stack_master/maps` directory.
+
+2. To operate the local controller, save the global_waypoints.csv file generated in stack_master/maps/<LOCATION_MMDD_HHMM> as reference_waypoint.csv under f1tenth_turtleship_ws/reference_waypoint_loader/data/.
+
+### Detail version
+
 ```bash
 roscore
 
@@ -76,8 +100,8 @@ source devel/setup.bash
 race stack
 
 ```bash
-roslaunch stack_master mapping.launch map_name:=1 racecar_version:=NUC2
-roslaunch stack_master base_system.launch map_name:=1 racecar_version:=NUC2
+roslaunch stack_master mapping.launch map_name:=<MAPNAME_MMDD_HHMM> racecar_version:=NUC2
+roslaunch stack_master base_system.launch map_name:=<MAPNAME_MMDD_HHMM> racecar_version:=NUC2
 ```
 
 mppi controller
