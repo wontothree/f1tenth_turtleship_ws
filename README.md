@@ -1,6 +1,6 @@
 # F1tenth Turtleship Workspace
 
-This project is for F!TENTH AUTONOMOUS GRAND Prix at CDC 2024.
+This project is for F1TENTH AUTONOMOUS GRAND Prix at CDC 2024.
 
 # Tested Environment
 
