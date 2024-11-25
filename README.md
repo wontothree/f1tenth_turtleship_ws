@@ -13,15 +13,11 @@ This project is for F1TENTH AUTONOMOUS GRAND Prix at CDC 2024.
         ├── reference_waypoint_loader/           #
         ├── local_costmap_generator/             #
         ├── mappi_controller/                    # local planner tracking global plan
-        ├──                              
+        ├
         ├── f1tenth_system/                      # 
         ├── vesc/                                # 
         ├── stack_master/                        # 
-        ├── vesc/                                # 
-        ├── vesc/                                # 
-        ├── vesc/                                # 
-        ├── vesc/                                # 
-        ├── vesc/                                # 
+        ├── cartographer_ros/                    # 
         └──
 
 # Tested Environment
