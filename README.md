@@ -29,7 +29,7 @@ This project is for F1TENTH AUTONOMOUS GRAND Prix at CDC 2024.
 
 ## Hardware
 
-- NUC11TNHi7 : CPU: i7-1165G7 (4.7GHz)
+- NUC11TNHi7 : CPU i7-1165G7 (4.7GHz)
 - Logitech G F710 Wireless Gamepad
 - Bldc motor : for driving
 - Servo motor : for steering
@@ -38,9 +38,9 @@ This project is for F1TENTH AUTONOMOUS GRAND Prix at CDC 2024.
 
 # Getting Started
 
-다음과 같이 구조를 만들어야 하며, map.yaml여기서 name을 map.png로 바꿔야 한다.
-
 ## Simulation
+
+다음과 같이 구조를 만들어야 하며, map.yaml여기서 name을 map.png로 바꿔야 한다.
 
     f1tenth_turtleship_ws
     └── data/
