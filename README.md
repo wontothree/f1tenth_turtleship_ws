@@ -138,6 +138,10 @@ roslaunch local_costmap_generator local_costmap_generator.launch
 roslaunch mppi_controller mppi_controller.launch is_simulation:=false is_localize_less_mode:=false
 ```
 
+# To do
+
+- slam과 global trajectory의 결과를 자동으로 적절한 형식, 이름, 경로로 저장하기
+
 # Acknowledgement
 
 Standing on the shoulders of giants
