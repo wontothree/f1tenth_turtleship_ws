@@ -1,0 +1,9 @@
+free_thresh: 0.196
+image: cdsl_11.30_v1.png
+negate: 0
+occupied_thresh: 0.65
+origin:
+- -4.5656066894531255
+- -9.9
+- 0
+resolution: 0.05000000074505806

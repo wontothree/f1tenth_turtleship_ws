@@ -1,0 +1,9 @@
+free_thresh: 0.196
+image: JJ_1201_1332.png
+negate: 0
+occupied_thresh: 0.65
+origin:
+- -6.977133178710938
+- -1.3687210083007812
+- 0
+resolution: 0.05000000074505806
