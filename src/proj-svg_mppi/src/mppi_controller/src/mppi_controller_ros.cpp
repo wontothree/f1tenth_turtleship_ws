@@ -144,7 +144,6 @@ MPPIControllerROS::MPPIControllerROS() : nh_(""), private_nh_("~"), tf_listener_
         ROS_ERROR("Invalid MPC mode: %s", mpc_mode.c_str());
         exit(1);
     }
-
     // set publishers and subscribers
     pub_ackermann_cmd_ = nh_.advertise<ackermann_msgs::AckermannDriveStamped>(control_cmd_topic, 1);
     timer_control_ = nh_.createTimer(ros::Duration(control_sampling_time_), &MPPIControllerROS::timer_callback, this);
@@ -339,6 +338,15 @@ void MPPIControllerROS::timer_callback([[maybe_unused]] const ros::TimerEvent& t
                 "constant speed mode.");
         }
     }
+
+    // // velocity scaling
+    // double speed_weight = 0.0;
+    // if (collision_rate >= 0.8) {
+    //     speed_weight = 0.4;
+    // } else if (collision_rate < 0.8 && collision_rate >= 0.3) {
+    //     speed_weight = 0.6;
+    // }
+
     control_msg_.drive.speed = speed_cmd * SPEED_WEIGHT;
 
     pub_ackermann_cmd_.publish(control_msg_);

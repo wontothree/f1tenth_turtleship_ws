@@ -137,23 +137,6 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /mppi/control_covariances
-      Name: MarkerArray
-      Namespaces:
-        steer_covariance: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /mppi/candidate_paths
-      Name: MarkerArray
-      Namespaces:
-        candidate_path_line: true
-        candidate_path_nodes: true
-      Queue Size: 100
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48

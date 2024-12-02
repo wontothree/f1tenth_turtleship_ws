@@ -31,8 +31,8 @@ mpc_mode: "svg_mppi" # "forward_mppi" or "reverse_mppi" or "sv_mpc" or "svg_mppi
 
 common:
   thread_num: 12
-  prediction_step_size: 18 # 기준 15, 최적 22
-  prediction_interval: 0.05 # 0.05
+  prediction_step_size: 17 # default: 15
+  prediction_interval: 0.045 # 0.05
   steer_delay: 0.01 # [s] dead time. If set enough large value, the prediction is similar to DWA planner.
   max_steer_angle: 0.45
   min_steer_angle: -0.45
