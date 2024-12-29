@@ -23,9 +23,13 @@
             <br>
             <div>
                 Although we are big fans of Model Predictive Control (MPC), we used the Model Predictive Path Integral (MPPI) controller for this competition. We believed that solving a nonlinear kinematic bicycle model within a 50ms control sampling time on our Intel NUC processor would be challenging for MPC. In contrast, MPPI, with its sampling-based approach and parallelization (multi-threading), seems more practical.
-
+            </div>
+            <br>
+            <div>
                 Looking back, I have two regrets regarding our algorithm. First, we controlled the vehicle’s velocity and steering angle using kinematics, but I think that controlling acceleration and steering angular velocity might have led to more stable vehicle movements. Second, collisions frequently occurred when the vehicle’s initial position was far from the global plan, likely due to the controller aggressively following the global plan. We should have taken this into account.
-
+            </div>
+            <br>
+            <div>
                 The competition was so much fun and I was glad to compete alongside so many talented researchers and engineers!
             </div>
         </div>
