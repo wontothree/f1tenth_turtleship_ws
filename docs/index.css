@@ -5,6 +5,7 @@
     text-rendering: optimizeLegibility;
 }
 
+/* hide scroll bar */
 ::-webkit-scrollbar {
     display: none;
 }
@@ -18,6 +19,7 @@
     font-family: sans-serif;
 }
 
+/* link style */
 a {
     text-decoration: none;
     color: inherit;
@@ -34,39 +36,15 @@ footer {
     text-align: center;
 }
 
+/* font size according to screen size */
 html {
     font-size: 16px;
 }
-
-@media (max-width: 1440px) {
-    html {
-        font-size: 14px;
-    }
-}
-
-@media (max-width: 1200px) {
-    html {
-        font-size: 13px;
-    }
-}
-
-@media (max-width: 1024px) {
-    html {
-        font-size: 12px;
-    }
-}
-
-@media (max-width: 768px) {
-    html {
-        font-size: 11px;
-    }
-}
-
-@media (max-width: 480px) {
-    html {
-        font-size: 10px;
-    }
-}
+@media (max-width: 1440px) { html { font-size: 14px; } }
+@media (max-width: 1200px) { html { font-size: 13px; } }
+@media (max-width: 1024px) { html { font-size: 12px; } }
+@media (max-width: 768px) { html { font-size: 11px; } }
+@media (max-width: 480px) { html { font-size: 10px; } }
 
 @media print {
     html {
@@ -76,23 +54,43 @@ html {
 
 /* custom */
 .intro {
-    margin: 2rem 0;
+    width: fit-content;
+    margin: 0.5rem 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 1rem;
+    /* padding: 0.5rem; */
     align-items: center;
 }
 
 .box {
     width: 45%; /* 너비를 100%로 설정하여 부모 요소에 맞춤 */
-    margin: 2rem 0; /* 위쪽과 아래쪽 여백 */
+    margin: 1rem 0; /* 위쪽과 아래쪽 여백 */
     border: 1px solid #aaa;
-    padding: 0 1rem;
+    padding: 0.5rem;
     border-radius: 5px; /* 모서리 둥글게 */
 }
 
-.container {
+/* .container {
     padding-top: 1rem;
     line-height: 1;
+} */
+
+/* box size according to screen size  */
+@media (max-width: 1024px) {
+    .box {
+        width: 70%;
+    }
+}
+
+@media (max-width: 768px) {
+    .box {
+        width: 90%;
+    }
+}
+
+@media (max-width: 480px) {
+    .box {
+        width: 95%;
+    }
 }
