@@ -1,0 +1,106 @@
+joy_node:
+  dev: /dev/input/js0
+  deadzone: 0.3
+  autorepeat_rate: 20
+  coalesce_interval: 0.01
+
+teleop:
+  # Default mode - Stop for safety
+  # default: 
+  #   type: topic
+  #   is_default: true
+  #   message_type: ackermann_msgs/AckermannDriveStamped
+  #   topic_name: low_level/ackermann_cmd_mux/input/teleop
+  #   message_value:
+  #     -
+  #       target: drive.speed
+  #       value: 0.0
+  #     -
+  #       target: drive.steering_angle
+  #       value: 0.0  
+
+  default: 
+    type: topic
+    is_default: true
+    message_type: std_msgs/Bool
+    topic_name: /set_speed_zero
+    message_value:
+      -
+        target: data
+        value: true  
+
+  # Enable Human control by holding Left Bumper
+  human_control:
+    type: topic
+    message_type: ackermann_msgs/AckermannDriveStamped
+    topic_name: low_level/ackermann_cmd_mux/input/teleop
+    deadman_buttons: [4]
+    axis_mappings:
+      -
+        axis: 1
+        target: drive.speed
+        scale: 1                 # joystick will command plus or minus 2 meters / second
+        offset: 0.0
+      -
+        axis: 3
+        target: drive.steering_angle
+        scale: 0.34                  # joystick will command plus or minus ~20 degrees steering angle
+        offset: 0.0
+
+  steer_velo_test:
+    type: topic
+    message_type: ackermann_msgs/AckermannDriveStamped
+    topic_name: low_level/ackermann_cmd_mux/input/teleop
+    deadman_buttons: [2]
+    message_value:
+      -
+        target: drive.steering_angle
+        value: 0.3
+      -
+        target: drive.speed
+        value: 2.1
+
+
+  # Enable autonomous control by pressing right bumper
+  # This switch causes the joy_teleop to stop sending messages to input/teleop
+  # And send messages to /dev/null (an unused ROS topic)
+  autonomous_control:
+    type: topic
+    message_type: std_msgs/Bool
+    topic_name: /reset_weights
+    deadman_buttons: [5]
+    message_value:
+      -
+        target: data
+        value: true
+
+  remove_collision_weight:
+    type: topic
+    message_type: std_msgs/Bool
+    topic_name: /collision_weight_toggle
+    deadman_buttons: [0, 5] # 추가 (green button)
+    message_value:
+      -
+        target: data
+        value: true
+
+  
+  lower_speed_weight:
+    type: topic
+    message_type: std_msgs/Bool
+    topic_name: /speed_weight_toggle
+    deadman_buttons: [1, 5] # 추가 (Red button)
+    message_value:
+      -
+        target: data
+        value: true
+
+  off_lim:
+    type: topic
+    message_type: std_msgs/Bool
+    topic_name: /off_lim
+    deadman_buttons: [3, 5] # 추가 (Red button)
+    message_value:
+      -
+        target: data
+        value: true

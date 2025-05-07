@@ -1,0 +1,57 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  continuous-integration:
+    runs-on: ubuntu-latest
+    container: lukasfro/bayesopt4ros:ci
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        path: "src/bayesopt4ros/"
+
+    - name: Set up catkin workspace
+      run: |
+        . /opt/ros/noetic/setup.sh
+        catkin_init_workspace
+        mkdir -p src/bayesopt4ros
+      
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        path: "src/bayesopt4ros/"
+
+    - name: Build catkin workspace
+      run: |
+        . /opt/ros/noetic/setup.sh
+        catkin_make_isolated
+
+    - name: Build sphinx documentation
+      run: |
+        . devel_isolated/setup.sh
+        cd src/bayesopt4ros/docs
+        make html
+        touch _build/html/.nojekyll
+
+    - name: Lint with flake8
+      run: |
+        flake8 src/bayesopt4ros/ --count --statistics
+
+    - name: Unittest with pytest
+      run: |
+        . devel_isolated/setup.sh
+        pytest src/bayesopt4ros/test/unit/
+
+    - name: Integration test with rostest
+      # Note: need to run `catkin_test_results` as this returns 1 for failure
+      #       catkin_make_isolated returns 0 even if tests fail.
+      run: |
+        . devel_isolated/setup.sh
+        catkin_make_isolated -j1 --catkin-make-args run_tests && catkin_test_results
