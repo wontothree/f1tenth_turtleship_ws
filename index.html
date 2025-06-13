@@ -6,57 +6,59 @@
     <meta name="description" content="Anthony Garcia">
     <meta name="author" content="Anthony Garcia">
     <title>Anthony Garcia</title>
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://wontothree.github.io/career/index.css">
 </head>
 <body>
-    <header class="header">
-        <br>
-    </header>
+    <header class="header"></header>
 
-    <div class="intro">
-     <h1>Introduction</h1>
-        <div class="box">
-            <div style="position: relative; width: 100%; height: 0; padding-bottom: 56.25%; /* 16:9 비율 */">
-                <iframe src="https://www.youtube.com/embed/j076SK77TCg" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen
-                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+    <br><br>
+    
+    <div class="base">
+        <h1>Video</h1>
+            <div class="box">
+                <div style="position: relative; width: 100%; height: 0; padding-bottom: 56.25%; /* 16:9 비율 */">
+                    <iframe src="https://www.youtube.com/embed/j076SK77TCg" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen
+                        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+                </div>
             </div>
-        </div>
 
-        <h1>Project</h1>
+            <h1>Project</h1>
+            <div class="box">
+                <div>- Project Duration: 09/29/2024-12/19/2024</div>
+                <div>- Competition: 22nd F1tenth Autonomous Grand Prix, 2024 IEEE Conference Decision and Contrl (CDC 2024)</div>
+                <div>- Team Member: Sewon Kim (Lead., Software), Jinwoo Lee, Seungsub Lee</div>
+                <br>
+                <p>
+                    Our team participated to compete in the 22nd F1TENTH Autonomous Grand Prix at CDC Milan 2024! In the time-trial, our team recorded a fastest lap of 8.46 seconds, earning 5th place out of 12 teams. While we were knocked out midway through the head-to-head tournament, the experience was truly invaluable.
+                </p>
+                <p>
+                    Although we are big fans of Model Predictive Control (MPC), we used the Model Predictive Path Integral (MPPI) controller for this competition. We believed that solving a nonlinear kinematic bicycle model within a 50ms control sampling time on our Intel NUC processor would be challenging for MPC. In contrast, MPPI, with its sampling-based approach and parallelization (multi-threading), seems more practical.
+                </p>
+                <p>
+                    Looking back, I have two regrets regarding our algorithm. First, we controlled the vehicle’s velocity and steering angle using kinematics, but I think that controlling acceleration and steering angular velocity might have led to more stable vehicle movements. Second, collisions frequently occurred when the vehicle’s initial position was far from the global plan, likely due to the controller aggressively following the global plan. We should have taken this into account.
+                </p>
+                <p>
+                    The competition was so much fun and I was glad to compete alongside so many talented researchers and engineers!
+                </p>
+            </div>
 
-        <div class="box">
-            <div>- Project Duration: 09/29/2024-12/19/2024</div>
-            <div>- Competition: 22nd F1tenth Autonomous Grand Prix, 2024 IEEE Conference Decision and Contrl (CDC 2024)</div>
-            <div>- Team Member: Sewon Kim (Lead., Software), Jinwoo Lee, Seungsub Lee</div>
-            <br>
-            <p>
-                Our team participated to compete in the 22nd F1TENTH Autonomous Grand Prix at CDC Milan 2024! In the time-trial, our team recorded a fastest lap of 8.46 seconds, earning 5th place out of 12 teams. While we were knocked out midway through the head-to-head tournament, the experience was truly invaluable.
-            </p>
-            <p>
-                Although we are big fans of Model Predictive Control (MPC), we used the Model Predictive Path Integral (MPPI) controller for this competition. We believed that solving a nonlinear kinematic bicycle model within a 50ms control sampling time on our Intel NUC processor would be challenging for MPC. In contrast, MPPI, with its sampling-based approach and parallelization (multi-threading), seems more practical.
-            </p>
-            <p>
-                Looking back, I have two regrets regarding our algorithm. First, we controlled the vehicle’s velocity and steering angle using kinematics, but I think that controlling acceleration and steering angular velocity might have led to more stable vehicle movements. Second, collisions frequently occurred when the vehicle’s initial position was far from the global plan, likely due to the controller aggressively following the global plan. We should have taken this into account.
-            </p>
-            <p>
-                The competition was so much fun and I was glad to compete alongside so many talented researchers and engineers!
-            </p>
-        </div>
-
-        <h1>Architecture</h1>
-        <div class="box">
-            <div>1. Simultanous Localization and Mapping</div>
-            <div>2. Global Planning with Model Predictive Control</div>
-            <div>3. Localization with SynPF</div>
-            <div>4. Local Cost Map: real time map</div>
-            <div>5. Local Planning (Control) with Model Predictive Path Integral Control</div>
+            <h1>Architecture</h1>
+            <div class="box">
+                <div>1. Simultanous Localization and Mapping</div>
+                <div>2. Global Planning with Model Predictive Control</div>
+                <div>3. Localization with SynPF</div>
+                <div>4. Local Cost Map: real time map</div>
+                <div>5. Local Planning (Control) with Model Predictive Path Integral Control</div>
+            </div>
         </div>
     </div>
 
-    <footer style="text-align: center; padding: 20px; font-size: 0.9em; color: #777;">
-        &copy; 2025 Anthony Garcia
-    </footer>   
+    <br><br>
+
+    <footer>&copy; 2025 Anthony Garcia</footer>    
+
+    <br>    
 </body>
 </html>
